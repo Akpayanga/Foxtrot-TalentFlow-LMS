@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import auth2 from "../assets/images/auth2.png";
+import { loginUser } from "../services/authService";
 
 export default function Login() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -11,6 +13,8 @@ export default function Login() {
     rememberMe: false,
   });
   const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -20,7 +24,7 @@ export default function Login() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
 
@@ -37,8 +41,25 @@ export default function Login() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log("Form submitted:", formData);
-      // TODO: Call login API endpoint
+      setApiError("");
+      setIsLoading(true);
+
+      try {
+        const data = await loginUser(formData);
+
+        if (data?.token) {
+          localStorage.setItem("authToken", data.token);
+        }
+
+        navigate("/");
+      } catch (error) {
+        const message =
+          error?.response?.data?.message ||
+          "Unable to log in right now. Please try again.";
+        setApiError(message);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -104,6 +125,12 @@ export default function Login() {
 
             {/* FORM */}
             <form onSubmit={handleSubmit}>
+              {apiError ? (
+                <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                  {apiError}
+                </p>
+              ) : null}
+
               {/* EMAIL INPUT */}
               <div className="mb-5">
                 <label className="block text-sm font-medium text-[#111827] mb-2">
@@ -187,9 +214,10 @@ export default function Login() {
               {/* LOGIN BUTTON */}
               <button
                 type="submit"
-                className="w-full bg-[#F38821] hover:bg-[#e37b1d] text-white font-semibold py-3 rounded-lg transition mb-6"
+                disabled={isLoading}
+                className="mb-6 w-full rounded-lg bg-[#F38821] py-3 font-semibold text-white transition hover:bg-[#e37b1d] disabled:cursor-not-allowed disabled:opacity-70"
               >
-                Log In
+                {isLoading ? "Logging in..." : "Log In"}
               </button>
             </form>
 

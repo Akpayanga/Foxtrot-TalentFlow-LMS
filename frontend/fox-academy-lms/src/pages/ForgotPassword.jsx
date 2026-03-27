@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail } from "lucide-react";
+import { requestPasswordReset } from "../services/authService";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [apiError, setApiError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!email.trim()) {
@@ -22,7 +25,20 @@ export default function ForgotPassword() {
     }
 
     setError("");
-    navigate("/forgot-password/sent", { state: { email } });
+    setApiError("");
+    setIsLoading(true);
+
+    try {
+      await requestPasswordReset({ email });
+      navigate("/forgot-password/sent", { state: { email } });
+    } catch (requestError) {
+      const message =
+        requestError?.response?.data?.message ||
+        "Unable to send reset link right now. Please try again.";
+      setApiError(message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -42,6 +58,12 @@ export default function ForgotPassword() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {apiError ? (
+            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+              {apiError}
+            </p>
+          ) : null}
+
           <div>
             <label className="mb-2 block text-[13px] font-medium text-[#111827]">
               Email Address
@@ -58,9 +80,10 @@ export default function ForgotPassword() {
 
           <button
             type="submit"
-            className="w-full rounded-[10px] bg-[#F38821] px-4 py-3 text-[16px] font-medium text-white transition hover:bg-[#e37b1d]"
+            disabled={isLoading}
+            className="w-full rounded-[10px] bg-[#F38821] px-4 py-3 text-[16px] font-medium text-white transition hover:bg-[#e37b1d] disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Send Reset Link
+            {isLoading ? "Sending..." : "Send Reset Link"}
           </button>
         </form>
 
