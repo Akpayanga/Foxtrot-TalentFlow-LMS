@@ -62,7 +62,7 @@ export default function ForgotPasswordSent() {
           type="button"
           onClick={handleResend}
           disabled={isLoading}
-          className="w-full rounded-[10px] bg-[#F38821] px-4 py-3 text-[16px] font-medium text-white transition hover:bg-[#e37b1d] disabled:cursor-not-allowed disabled:opacity-70"
+          className="w-full rounded-[10px] border border-[#F38821] bg-transparent px-4 py-3.5 text-[15px] font-semibold text-[#F38821] transition hover:bg-[#F38821]/5 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoading ? "Sending..." : "Reset Link"}
         </button>
@@ -70,7 +70,7 @@ export default function ForgotPasswordSent() {
         <button
           type="button"
           onClick={() => navigate("/login")}
-          className="mt-4 w-full rounded-[10px] px-4 py-3 text-[16px] font-medium text-[#F38821] transition hover:bg-[#FEF3E9]"
+          className="mt-6 w-full text-[14px] font-medium text-[#F38821] transition hover:underline"
         >
           Back to Log In
         </button>
