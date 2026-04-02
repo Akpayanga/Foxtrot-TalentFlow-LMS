@@ -1,88 +1,38 @@
-import { BadgeCheck, CalendarDays, ChevronRight } from "lucide-react";
-import { Link, useLocation, useParams } from "react-router-dom";
-import welcome1 from "../assets/images/welcome1.png";
-
-const HERO_IMAGE = welcome1;
+import { Check, X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function ApplicationReceived() {
-  const { token } = useParams();
-  const location = useLocation();
-  const queryToken = new URLSearchParams(location.search).get("token");
-  const accessToken = token || queryToken;
-
   return (
-    <div
-      className="flex min-h-screen items-center justify-center bg-[#F3F3F3] px-4 py-8 md:px-6"
-      data-link-access={accessToken ? "email" : "direct"}
-    >
-      <div className="w-full max-w-[576px]">
-        <div className="flex flex-col gap-10 overflow-hidden rounded-[12px] bg-white p-6 shadow-[0px_24px_48px_-12px_rgba(0,0,0,0.06)] md:p-12">
-          <div className="flex justify-center">
-            <div className="inline-flex items-center gap-3 rounded-full bg-[#FEF3E9] px-6 py-3">
-              <BadgeCheck size={16} className="text-[#F38821]" />
-              <p className="text-[12px] font-bold uppercase tracking-[1.4px] text-[#6B7280] md:text-[14px]">
-                CODE VALIDATED: TM-2026-UX-1906
-              </p>
-            </div>
-          </div>
+    <div className="flex min-h-screen items-center justify-center bg-white px-4 py-8">
+      <div className="relative w-full max-w-xl rounded-xl bg-white px-6 py-10 text-center md:px-10 md:py-14">
+        <Link
+          to="/"
+          aria-label="Close and return home"
+          className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center text-[#4B5563] transition hover:text-[#111827]"
+        >
+          <X size={22} strokeWidth={2.25} />
+        </Link>
 
-          <div className="overflow-hidden rounded-[8px] bg-[#EEEEEE]">
-            <img
-              src={HERO_IMAGE}
-              alt="Celebrating colleagues in an office"
-              className="h-[220px] w-full object-cover opacity-90 grayscale md:h-[270px]"
-            />
-          </div>
-
-          <div className="space-y-2 text-center">
-            <p className="text-[12px] uppercase tracking-[2.4px] text-[#6B7280]">
-              Onboarding Sequence Complete
-            </p>
-            <h1 className="text-[42px] font-bold leading-[1.05] tracking-[-1.2px] text-[#111827] md:text-[56px]">
-              Welcome, Amara.
-            </h1>
-          </div>
-
-          <div className="rounded-[8px] bg-[rgba(254,243,233,0.5)] p-6 md:p-8">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-x-8 md:gap-y-8">
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold uppercase tracking-[0.5px] text-[#6B7280]">
-                  Position
-                </p>
-                <p className="text-[24px] font-semibold leading-[1.2] text-[#111827] md:text-[30px]">
-                  UI/UX Design Intern
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold uppercase tracking-[0.5px] text-[#6B7280]">
-                  Cohort Status
-                </p>
-                <p className="text-[24px] font-semibold leading-[1.2] text-[#111827] md:text-[30px]">
-                  Phase 1
-                </p>
-              </div>
-
-              <div className="space-y-1 border-t border-[rgba(198,198,198,0.2)] pt-4 md:col-span-2 md:pt-[17px]">
-                <p className="text-[10px] font-bold uppercase tracking-[0.5px] text-[#6B7280]">
-                  Duration
-                </p>
-                <div className="flex items-center gap-2 text-[14px] font-medium text-[#374151]">
-                  <CalendarDays size={14} />
-                  <p>March 17 - June 10, 2024</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <Link
-            to="/signup"
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-[#F38821] px-4 py-3 text-[16px] font-medium text-white transition hover:bg-[#e47d1e]"
-          >
-            Complete My Registration
-            <ChevronRight size={20} />
-          </Link>
+        <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-[#FEF3E9] md:h-24 md:w-24">
+          <Check size={42} strokeWidth={2.75} className="text-[#1F2937] md:size-12" />
         </div>
+
+        <p className="mb-3 text-[12px] font-medium uppercase tracking-[2.4px] text-transparent">
+          Application received
+        </p>
+        <h1 className="mx-auto max-w-130 text-[39px] font-bold leading-9 tracking-[-0.75px] text-[#111827] md:text-[42px]">
+          Application Success
+        </h1>
+        <p className="mx-auto mt-3 max-w-148.75 text-[20px] leading-6 text-[#6B7280]">
+          We have successfully received your application. Our team is currently reviewing it. If accepted, your invite code will be sent to your email within 24 hours.
+        </p>
+
+        <Link
+          to="/"
+          className="mt-8 inline-flex w-full max-w-115 items-center justify-center rounded-[10px] border border-[#F9C899] px-4 py-3 text-[16px] font-medium text-[#FB8C00] transition hover:bg-[#FFF8F2]"
+        >
+          Back to Homepage
+        </Link>
       </div>
     </div>
   );
