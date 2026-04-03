@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom"; // <-- Imported NavLink here
+import { NavLink } from "react-router-dom";
 import profile from "../assets/profile.png";
 
 const TopNav = () => {
@@ -30,7 +30,6 @@ const TopNav = () => {
             {({ isActive }) => (
               <>
                 Dashboard
-                {/* Only show the orange line if this page is active! */}
                 {isActive && (
                   <span className="absolute bottom-0 left-0 w-full h-[3px] bg-[#f38821] rounded-t-full"></span>
                 )}
@@ -75,12 +74,25 @@ const TopNav = () => {
           >
             Resources
           </a>
-          <a
-            href="#"
-            className="h-full flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 transition"
+
+          {/* COMMUNITY LINK - UPDATED TO NAVLINK */}
+          <NavLink
+            to="/community"
+            className={({ isActive }) =>
+              isActive
+                ? "h-full flex items-center text-sm font-bold text-[#f38821] relative"
+                : "h-full flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 transition relative"
+            }
           >
-            Community
-          </a>
+            {({ isActive }) => (
+              <>
+                Community
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 w-full h-[3px] bg-[#f38821] rounded-t-full"></span>
+                )}
+              </>
+            )}
+          </NavLink>
         </nav>
 
         {/* USER PROFILE & MOBILE MENU BUTTON */}
@@ -133,7 +145,7 @@ const TopNav = () => {
         <div className="lg:hidden absolute top-[64px] left-0 w-full bg-white border-b border-gray-100 shadow-lg flex flex-col py-2 px-4 animate-fade-in">
           <NavLink
             to="/"
-            onClick={() => setIsMobileMenuOpen(false)} // Closes menu when clicked
+            onClick={() => setIsMobileMenuOpen(false)}
             className={({ isActive }) =>
               isActive
                 ? "py-4 text-sm font-bold text-[#f38821] border-b border-gray-50"
@@ -173,9 +185,19 @@ const TopNav = () => {
           >
             Resources
           </a>
-          <a href="#" className="py-4 text-sm font-medium text-gray-500">
+
+          {/* MOBILE COMMUNITY LINK - UPDATED */}
+          <NavLink
+            to="/community"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={({ isActive }) =>
+              isActive
+                ? "py-4 text-sm font-bold text-[#f38821]"
+                : "py-4 text-sm font-medium text-gray-500 hover:text-gray-900 transition"
+            }
+          >
             Community
-          </a>
+          </NavLink>
         </div>
       )}
     </header>
