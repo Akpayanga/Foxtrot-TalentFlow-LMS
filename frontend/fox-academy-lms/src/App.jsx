@@ -17,6 +17,7 @@ import Dashboard from "./pages/Dashboard";
 import MyLearning from "./pages/MyLearning";
 import ModuleDetail from "./pages/ModuleDetail";
 import Assignments from "./pages/Assignments";
+import UserPersonaAssignment from "./pages/UserPersonaAssignment";
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
         <Route path="/learning" element={<MyLearning />} />
         <Route path="/learning/module" element={<ModuleDetail />} />
         <Route path="/assignments" element={<Assignments />} />
+        <Route path="/assignments/user-persona" element={<UserPersonaAssignment />} />
       </Routes>
     </Router>
   );

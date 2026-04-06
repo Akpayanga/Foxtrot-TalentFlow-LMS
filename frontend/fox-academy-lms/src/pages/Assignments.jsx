@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardNavbar from "../components/DashboardNavbar";
 import { 
   AlertCircle, 
@@ -11,6 +12,8 @@ import {
 } from "lucide-react";
 
 const Assignments = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-white text-[#111827]">
       <DashboardNavbar />
@@ -101,6 +104,7 @@ const Assignments = () => {
                 dueDate="Due Mar 24"
                 actionText="Continue Draft"
                 actionType="primary"
+                onClick={() => navigate('/assignments/user-persona')}
               />
 
               {/* Card 3: Usability Quiz */}
@@ -214,7 +218,8 @@ const AssignmentCard = ({
   module, 
   dueDate, 
   actionText, 
-  actionType 
+  actionType,
+  onClick
 }) => {
   return (
     <div className="bg-white rounded-xl p-6 border border-gray-50 flex flex-col sm:flex-row items-center justify-between hover:shadow-md transition-shadow">
@@ -243,11 +248,17 @@ const AssignmentCard = ({
       
       <div className="mt-4 sm:mt-0 w-full sm:w-auto">
         {actionType === 'primary' ? (
-          <button className="w-full sm:w-[160px] bg-[#F38821] hover:bg-[#E07A1D] text-white text-xs font-black py-3 rounded-full transition-colors shadow-lg shadow-orange-100">
+          <button 
+            onClick={onClick}
+            className="w-full sm:w-[160px] bg-[#F38821] hover:bg-[#E07A1D] text-white text-xs font-black py-3 rounded-full transition-colors shadow-lg shadow-orange-100"
+          >
             {actionText}
           </button>
         ) : (
-          <button className="w-full sm:w-[160px] border-2 border-[#FFF7ED] hover:border-[#F38821] text-[#F38821] text-xs font-black py-3 rounded-full transition-colors">
+          <button 
+            onClick={onClick}
+            className="w-full sm:w-[160px] border-2 border-[#FFF7ED] hover:border-[#F38821] text-[#F38821] text-xs font-black py-3 rounded-full transition-colors"
+          >
             {actionText}
           </button>
         )}
