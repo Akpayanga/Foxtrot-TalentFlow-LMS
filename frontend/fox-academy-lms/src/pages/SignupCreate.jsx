@@ -31,7 +31,7 @@ export default function SignupCreate() {
             <div className="flex items-center gap-2">
               <span className="h-8 w-8 rounded bg-[#F38821]" />
               <span className="text-[20px] font-bold leading-[1.5] text-[#F38821]">
-                TalentFlow
+                Fox Academy
               </span>
             </div>
 
@@ -71,7 +71,6 @@ export default function SignupCreate() {
             </button>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-            <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="mb-2 block text-[13px] font-medium text-[#111827]">
@@ -159,7 +158,7 @@ export default function SignupCreate() {
                   className="h-4 w-4 rounded border border-[#D1D5DC] bg-[#F3F3F5] accent-[#F38821]"
                 />
                 <span>
-                  I agree to TalentFlow&apos;s{" "}
+                  I agree to Fox Academy&apos;s{" "}
                   <a href="#" className="font-medium text-[#F38821] hover:underline">
                     Terms
                   </a>{" "}

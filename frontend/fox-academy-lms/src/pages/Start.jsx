@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import auth3 from "../assets/images/auth3.png";
 
@@ -17,7 +17,7 @@ export default function Start() {
         <div className="relative hidden overflow-hidden bg-gray-100 md:block">
           <img
             src={auth3}
-            alt="Professionals using TalentFlow"
+            alt="Professionals using Fox Academy"
             className="h-full w-full object-cover"
           />
         </div>
@@ -27,7 +27,7 @@ export default function Start() {
             <div className="flex items-center gap-2">
               <span className="h-8 w-8 rounded bg-[#F38821]" />
               <span className="text-[20px] font-bold leading-normal text-[#F38821]">
-                TalentFlow
+                Fox Academy
               </span>
             </div>
 
@@ -46,7 +46,7 @@ export default function Start() {
                 You&apos;ve Been Invited
               </h1>
               <p className="text-[16px] leading-normal text-[#374151]">
-                TalentFlow is an invite-only platform. Enter the invite code shared by your cohort coordinator to get started.
+                Fox Academy is an invite-only platform. Enter the invite code shared by your cohort coordinator to get started.
               </p>
             </div>
 

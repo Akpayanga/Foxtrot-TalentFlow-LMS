@@ -13,6 +13,8 @@ import LearnPreview from "./pages/LearnPreview";
 import OnboardingComplete from "./pages/OnboardingComplete";
 import ApplicationForm from "./pages/ApplicationForm";
 import ApplicationReceived from "./pages/ApplicationReceived";
+import Dashboard from "./pages/Dashboard";
+import MyLearning from "./pages/MyLearning";
 
 function App() {
   return (
@@ -33,6 +35,8 @@ function App() {
         <Route path="/onboarding/team" element={<JoinTeam />} />
         <Route path="/onboarding/learn" element={<LearnPreview />} />
         <Route path="/onboarding/complete" element={<OnboardingComplete />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/learning" element={<MyLearning />} />
       </Routes>
     </Router>
   );
