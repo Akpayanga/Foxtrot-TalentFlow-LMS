@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React from "react";
 import DashboardNavbar from "../components/DashboardNavbar";
 import { 
   ChevronRight, 
@@ -7,46 +7,14 @@ import {
   CloudUpload, 
   HelpCircle,
   FileText,
-  BookOpen,
-  Clock
+  BookOpen
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const UserPersonaAssignment = () => {
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef(null);
-  const navigate = useNavigate();
-
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
-    }
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setSelectedFile(e.dataTransfer.files[0]);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-[#FDFDFD] flex flex-col relative">
+    <div className="min-h-screen bg-[#FDFDFD] flex flex-col">
       <DashboardNavbar />
-      
-      {isSubmitted && <SubmissionSuccessModal navigate={navigate} />}
       
       <main className="flex-1 mx-auto w-full max-w-[1440px] px-6 py-10">
         {/* Breadcrumbs */}
@@ -165,32 +133,12 @@ const UserPersonaAssignment = () => {
               </div>
 
               {/* Upload Area */}
-              <div 
-                onClick={() => fileInputRef.current.click()}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                className={`border-2 border-dashed ${isDragging ? 'border-[#F38821] bg-orange-50/50' : 'border-[#FFF7ED]'} rounded-2xl p-10 flex flex-col items-center justify-center text-center group transition-all cursor-pointer mb-8`}
-              >
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handleFileChange} 
-                  className="hidden" 
-                />
-                <div className={`h-16 w-16 rounded-full ${selectedFile ? 'bg-green-50 text-green-500' : 'bg-orange-50 text-[#F38821]'} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                  {selectedFile ? (
-                    <CheckCircle size={32} />
-                  ) : (
-                    <CloudUpload size={32} />
-                  )}
+              <div className="border-2 border-dashed border-[#FFF7ED] rounded-2xl p-10 flex flex-col items-center justify-center text-center group hover:border-[#F38821] transition-colors cursor-pointer mb-8">
+                <div className="h-16 w-16 rounded-full bg-orange-50 flex items-center justify-center text-[#F38821] mb-4 group-hover:scale-110 transition-transform">
+                  <CloudUpload size={32} />
                 </div>
-                <h3 className="text-lg font-bold text-[#111827] mb-1">
-                  {selectedFile ? selectedFile.name : 'Drop your file here'}
-                </h3>
-                <p className="text-xs text-gray-400 font-medium">
-                  {selectedFile ? `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB` : 'or click to browse'}
-                </p>
+                <h3 className="text-lg font-bold text-[#111827] mb-1">Drop your file here</h3>
+                <p className="text-xs text-gray-400 font-medium">or click to browse</p>
               </div>
 
               {/* Paste Link */}
@@ -219,10 +167,7 @@ const UserPersonaAssignment = () => {
 
               {/* Actions */}
               <div className="space-y-4 text-center">
-                <button 
-                  onClick={() => setIsSubmitted(true)}
-                  className="w-full bg-[#F38821] hover:bg-[#E07A1D] text-white text-sm font-black py-5 rounded-2xl transition-all shadow-lg shadow-orange-100 hover:-translate-y-0.5 active:translate-y-0"
-                >
+                <button className="w-full bg-[#F38821] hover:bg-[#E07A1D] text-white text-sm font-black py-5 rounded-2xl transition-all shadow-lg shadow-orange-100 hover:-translate-y-0.5 active:translate-y-0">
                   Submit Assignment
                 </button>
                 <button className="text-[10px] font-black tracking-widest text-gray-400 hover:text-[#F38821] uppercase transition-colors">
@@ -233,7 +178,7 @@ const UserPersonaAssignment = () => {
 
             {/* Support Box */}
             <div className="bg-gray-50 rounded-2xl p-6 flex items-start gap-4">
-               <div className="h-10 w-10 shrink-0 bg-white border border-gray-100 rounded-full flex items-center justify-center text-[#F38821]">
+               <div className="h-10 w-10 flex-shrink-0 bg-white border border-gray-100 rounded-full flex items-center justify-center text-[#F38821]">
                  <HelpCircle size={20} />
                </div>
                <p className="text-xs font-medium text-gray-500 leading-relaxed">
@@ -280,69 +225,12 @@ const ResourceCard = ({ title, info }) => (
 
 const GradingStep = ({ number, title, description }) => (
   <div className="flex gap-6 items-start">
-    <div className="h-12 w-12 shrink-0 bg-orange-50 rounded-full flex items-center justify-center text-[#F38821] text-xs font-black ring-8 ring-[#FDFDFD]">
+    <div className="h-12 w-12 flex-shrink-0 bg-orange-50 rounded-full flex items-center justify-center text-[#F38821] text-xs font-black ring-8 ring-[#FDFDFD]">
       {number}
     </div>
     <div className="pt-1">
       <h4 className="text-lg font-bold text-[#111827] mb-1">{title}</h4>
       <p className="text-sm text-gray-400 leading-relaxed">{description}</p>
-    </div>
-  </div>
-);
-
-const SubmissionSuccessModal = ({ navigate }) => (
-  <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-0">
-    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-    <div className="relative bg-white rounded-3xl w-full max-w-[540px] p-10 flex flex-col items-center text-center shadow-2xl animate-in zoom-in-95 duration-200">
-      <div className="h-20 w-20 rounded-full bg-[#F38821] flex items-center justify-center text-white mb-8 shadow-lg shadow-orange-200">
-        <CheckCircle size={44} strokeWidth={2.5} />
-      </div>
-      
-      <h2 className="text-3xl font-black text-[#111827] mb-4 tracking-tight">Assignment Submitted!</h2>
-      <p className="text-sm text-gray-400 mb-8 max-w-sm leading-relaxed">
-        Your <span className="text-[#F38821] font-bold">"User Persona Document"</span> has been successfully sent to <span className="text-[#111827] font-bold">Dr. Funke Adeyemi</span> for review.
-      </p>
-
-      {/* Submitted File Card */}
-      <div className="w-full bg-[#EEF2FF] rounded-2xl p-6 mb-8 text-left">
-        <div className="flex items-center gap-5">
-           <div className="h-12 w-12 rounded-xl bg-white flex items-center justify-center text-[#F38821] shadow-sm">
-             <FileText size={24} />
-           </div>
-           <div>
-             <h4 className="text-sm font-bold text-[#111827] mb-0.5">Amara_Okafor_User_Personas.pdf</h4>
-             <p className="text-[11px] text-gray-400 font-medium">1.2 MB</p>
-           </div>
-        </div>
-        <div className="mt-5 pt-4 border-t border-indigo-100 flex items-center gap-2 text-[10px] font-black tracking-widest text-[#4338CA]/60 uppercase">
-          <Clock size={14} />
-          Submitted Today, 11:42 AM
-        </div>
-      </div>
-
-      {/* Next Steps */}
-      <div className="w-full border-l-2 border-[#F38821] bg-orange-50/30 p-4 rounded-r-xl mb-10 text-left">
-        <p className="text-[10px] font-black tracking-widest text-[#F38821] uppercase mb-1">NEXT STEPS</p>
-        <p className="text-[13px] text-gray-500 font-medium leading-relaxed">
-          Your mentor will review your work within 48 hours. You'll receive a notification once your grade and feedback are ready.
-        </p>
-      </div>
-
-      {/* Actions */}
-      <div className="w-full space-y-3">
-        <button 
-          onClick={() => navigate('/assignments')}
-          className="w-full bg-[#F38821] hover:bg-[#E07A1D] text-white text-sm font-black py-5 rounded-2xl transition-all shadow-lg shadow-orange-100 hover:-translate-y-0.5 active:translate-y-0"
-        >
-          Back to Assignments
-        </button>
-        <button 
-          onClick={() => navigate('/dashboard')}
-          className="w-full bg-white border-2 border-gray-100 text-gray-500 hover:border-[#F38821] hover:text-[#F38821] text-sm font-black py-5 rounded-2xl transition-all"
-        >
-          Go to Dashboard
-        </button>
-      </div>
     </div>
   </div>
 );

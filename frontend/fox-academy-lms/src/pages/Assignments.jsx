@@ -18,7 +18,7 @@ const Assignments = () => {
     <div className="min-h-screen bg-white text-[#111827]">
       <DashboardNavbar />
       
-      <main className="mx-auto max-w-[1100px] px-6 py-12">
+      <main className="mx-auto max-w-275 px-6 py-12">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-10">
           <div>
@@ -31,7 +31,7 @@ const Assignments = () => {
           </div>
           
           {/* Course Progress Card */}
-          <div className="mt-8 md:mt-0 bg-[#E0E7FF]/40 rounded-xl p-5 w-full md:w-[280px]">
+          <div className="mt-8 md:mt-0 bg-[#E0E7FF]/40 rounded-xl p-5 w-full md:w-70">
             <div className="flex justify-between items-center mb-4">
               <span className="text-[10px] font-bold tracking-widest text-[#4338CA]/70 uppercase">
                 Course Progress
@@ -250,14 +250,14 @@ const AssignmentCard = ({
         {actionType === 'primary' ? (
           <button 
             onClick={onClick}
-            className="w-full sm:w-[160px] bg-[#F38821] hover:bg-[#E07A1D] text-white text-xs font-black py-3 rounded-full transition-colors shadow-lg shadow-orange-100"
+            className="w-full sm:w-40 bg-[#F38821] hover:bg-[#E07A1D] text-white text-xs font-black py-3 rounded-full transition-colors shadow-lg shadow-orange-100"
           >
             {actionText}
           </button>
         ) : (
           <button 
             onClick={onClick}
-            className="w-full sm:w-[160px] border-2 border-[#FFF7ED] hover:border-[#F38821] text-[#F38821] text-xs font-black py-3 rounded-full transition-colors"
+            className="w-full sm:w-40 border-2 border-[#FFF7ED] hover:border-[#F38821] text-[#F38821] text-xs font-black py-3 rounded-full transition-colors"
           >
             {actionText}
           </button>

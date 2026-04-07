@@ -39,7 +39,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#FDFDFD]">
       <DashboardNavbar />
       
-      <main className="mx-auto max-w-[1440px] px-6 py-8">
+      <main className="mx-auto max-w-360 px-6 py-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
           {/* Left Column: Main Content */}
           <div className="space-y-12">

@@ -1,7 +1,11 @@
 import { Check, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export default function ApplicationReceived() {
+  const location = useLocation();
+  const inviteLink = location.state?.inviteLink;
+  const emailSent = location.state?.emailSent;
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-white px-4 py-8">
       <div className="relative w-full max-w-xl rounded-xl bg-white px-6 py-10 text-center md:px-10 md:py-14">
@@ -26,6 +30,21 @@ export default function ApplicationReceived() {
         <p className="mx-auto mt-3 max-w-148.75 text-[20px] leading-6 text-[#6B7280]">
           We have successfully received your application. Our team is currently reviewing it. If accepted, your invite code will be sent to your email within 24 hours.
         </p>
+
+        {inviteLink ? (
+          <div className="mx-auto mt-5 max-w-148.75 rounded-[10px] border border-[#F9C899] bg-[#FFF8F2] px-4 py-3 text-left text-[13px] text-[#6B7280]">
+            <p className="font-semibold text-[#111827]">Dev test link:</p>
+            <a href={inviteLink} className="break-all text-[#F38821] underline">
+              {inviteLink}
+            </a>
+          </div>
+        ) : null}
+
+        {emailSent === false ? (
+          <p className="mx-auto mt-4 max-w-148.75 rounded-[10px] border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#B91C1C]">
+            Invite email could not be sent. Configure SMTP in backend env, then retry.
+          </p>
+        ) : null}
 
         <Link
           to="/"
