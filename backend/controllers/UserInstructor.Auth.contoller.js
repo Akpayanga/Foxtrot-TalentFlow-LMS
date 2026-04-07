@@ -3,7 +3,7 @@ const ApiError = require("../utilities/apiError.util");
 const { success } = require("../utilities/response");
 const { generateAccessToken, generateRefreshToken, verifyToken } = require("../utilities/jwt");
 const crypto = require("crypto");
-const { sendVerificationEmail } = require("../utilities/email.util");
+const { enqueueVerificationEmail } = require("../service/emaill.service");
 const { recordAudit } = require("../utilities/audit.util");
 
 // Pre-register (students/instructors)
@@ -29,7 +29,7 @@ exports.preRegister = async (req, res, next) => {
       verificationTokenExpiry: Date.now() + 10 * 60 * 1000,
     });
 
-    await sendVerificationEmail(email, token, invitationCode);
+    await enqueueVerificationEmail(email, token, invitationCode);
     await recordAudit({ userId: user._id, action: "PRE_REGISTER", details: `${role} pre-registered`, req });
 
     return success(res, null, "Pre-registration successful. Check your email in 10 minutes.");

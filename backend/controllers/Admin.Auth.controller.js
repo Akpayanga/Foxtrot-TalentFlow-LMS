@@ -2,7 +2,7 @@ const User = require("../models/user.model");
 const ApiError = require("../utilities/apiError.util");
 const { success } = require("../utilities/response");
 const crypto = require("crypto");
-const { sendVerificationEmail } = require("../utilities/email.util");
+const { enqueueVerificationEmail } = require("../service/emaill.service");
 const { recordAudit } = require("../utilities/audit.util");
 
 exports.adminRegister = async (req, res, next) => {
@@ -26,7 +26,7 @@ exports.adminRegister = async (req, res, next) => {
       verificationTokenExpiry: Date.now() + 3600000,
     });
 
-    await sendVerificationEmail(user.email, token, null);
+    await enqueueVerificationEmail(user.email, token, null);
     await recordAudit({ userId: user._id, action: "ADMIN_REGISTER", details: "Admin registered", req });
 
     return success(res, null, "Admin registration successful. Please verify your email.");

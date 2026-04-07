@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
+const Sentry = require("@sentry/node");
 const connectDB = require("./config/database");
 require("./config/passport.config");
 
@@ -15,9 +16,16 @@ const dashboardRoutes = require("./routes/dashboard.route");
 const assignmentRoutes = require("./routes/assignment.route");
 const courseRoutes = require("./routes/course.route");
 const applicationRoutes = require("./routes/application.route");
+const errorHandler = require("./middleware/errrorHandler.middleware");
 
-const app = express(); 
+const app = express();
+app.disable("x-powered-by");
 
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({ dsn: process.env.SENTRY_DSN, tracesSampleRate: 1.0 });
+}
+app.use(errorHandler);
 // Middleware
 app.use(cors({ origin: "http://localhost:3000", credentials: true })); 
 app.use(express.json());
