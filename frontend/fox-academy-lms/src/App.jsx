@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -18,6 +18,7 @@ import MyLearning from "./pages/MyLearning";
 import ModuleDetail from "./pages/ModuleDetail";
 import Assignments from "./pages/Assignments";
 import UserPersonaAssignment from "./pages/UserPersonaAssignment";
+import Progress from "./pages/Progress";
 
 function App() {
   return (
@@ -30,7 +31,10 @@ function App() {
         <Route path="/verify-email" element={<EmailVerification />} />
         <Route path="/application" element={<ApplicationForm />} />
         <Route path="/application/success" element={<ApplicationReceived />} />
-        <Route path="/application/success/link/:token" element={<ApplicationReceived />} />
+        <Route
+          path="/application/success/link/:token"
+          element={<ApplicationReceived />}
+        />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/forgot-password/sent" element={<ForgotPasswordSent />} />
         <Route path="/welcome" element={<Welcome />} />
@@ -42,7 +46,11 @@ function App() {
         <Route path="/learning" element={<MyLearning />} />
         <Route path="/learning/module" element={<ModuleDetail />} />
         <Route path="/assignments" element={<Assignments />} />
-        <Route path="/assignments/user-persona" element={<UserPersonaAssignment />} />
+        <Route path="/progress" element={<Progress />} />
+        <Route
+          path="/assignments/user-persona"
+          element={<UserPersonaAssignment />}
+        />
       </Routes>
     </Router>
   );
