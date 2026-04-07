@@ -20,4 +20,3 @@ router.get("/google/callback", passport.authenticate("google-admin",
      { session: false }), adminAuthController.googleAdminLogin);
 
 module.exports = router;
-

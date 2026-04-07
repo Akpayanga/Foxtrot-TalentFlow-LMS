@@ -20,23 +20,24 @@ const errorHandler = require("./middleware/errrorHandler.middleware");
 const notificationRoutes = require("./routes/Notification.route");
 const courseProgressRoutes = require("./routes/courseProgress.routes");
 const mediaRoutes = require("./routes/media.route");
+const learningRoutes = require("./routes/learning.route");
+const discussionRoutes = require("./routes/discussion.route");
+
 
 const app = express();
 app.disable("x-powered-by");
-
 
 if (process.env.SENTRY_DSN) {
   Sentry.init({ dsn: process.env.SENTRY_DSN, tracesSampleRate: 1.0 });
 }
 app.use(errorHandler);
 // Middleware
-app.use(cors({ origin: "http://localhost:3000", credentials: true })); 
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 app.use(passport.initialize());
 app.use(cookieParser());
 
 connectDB();
-
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/auth", passwordRoutes);
@@ -46,6 +47,8 @@ app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/v1/assignments", assignmentRoutes);
 app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/applications", applicationRoutes);
+app.use("/api/v1/learning", learningRoutes);
+app.use("/api/v1/community", discussionRoutes);
 
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/course-progress", courseProgressRoutes);
