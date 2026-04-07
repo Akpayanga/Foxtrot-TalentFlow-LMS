@@ -11,7 +11,7 @@ import SetProfile from "./pages/SetProfile";
 import JoinTeam from "./pages/JoinTeam";
 import LearnPreview from "./pages/LearnPreview";
 import OnboardingComplete from "./pages/OnboardingComplete";
-
+import WatchCourse from "./pages/WatchCourse";
 
 
 
@@ -31,9 +31,8 @@ function App() {
         <Route path="/onboarding/team" element={<JoinTeam />} />
         <Route path="/onboarding/learn" element={<LearnPreview />} />
         <Route path="/onboarding/complete" element={<OnboardingComplete />} />
-
-
-
+        <Route path="/watch-course" element={<WatchCourse />} />
+        <Route path="/course/:courseId/module/:moduleId" element={<WatchCourse />} />
       </Routes>
     </Router>
   );
