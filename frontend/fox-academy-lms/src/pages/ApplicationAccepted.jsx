@@ -9,6 +9,11 @@ export default function ApplicationAccepted() {
   const location = useLocation();
   const queryToken = new URLSearchParams(location.search).get("token");
   const accessToken = token || queryToken;
+  const applicant = location.state?.applicant;
+  const firstName = applicant?.fullName?.split(" ")?.[0] || "Applicant";
+  const position = applicant?.primaryDiscipline
+    ? `${applicant.primaryDiscipline} Intern`
+    : "Intern";
 
   return (
     <div
@@ -21,7 +26,7 @@ export default function ApplicationAccepted() {
             <div className="inline-flex items-center gap-3 rounded-full bg-[#FEF3E9] px-6 py-3">
               <BadgeCheck size={16} className="text-[#F38821]" />
               <p className="text-[12px] font-bold uppercase tracking-[1.4px] text-[#6B7280] md:text-[14px]">
-                CODE VALIDATED: TM-2026-UX-1906
+                CODE VALIDATED: {applicant?.inviteCode || "N/A"}
               </p>
             </div>
           </div>
@@ -39,7 +44,7 @@ export default function ApplicationAccepted() {
               Onboarding Sequence Complete
             </p>
             <h1 className="text-[42px] font-bold leading-[1.05] tracking-[-1.2px] text-[#111827] md:text-[56px]">
-              Welcome, Amara.
+              Welcome, {firstName}.
             </h1>
           </div>
 
@@ -50,7 +55,7 @@ export default function ApplicationAccepted() {
                   Position
                 </p>
                 <p className="text-[24px] font-semibold leading-[1.2] text-[#111827] md:text-[30px]">
-                  UI/UX Design Intern
+                  {position}
                 </p>
               </div>
 
@@ -59,17 +64,31 @@ export default function ApplicationAccepted() {
                   Cohort Status
                 </p>
                 <p className="text-[24px] font-semibold leading-[1.2] text-[#111827] md:text-[30px]">
-                  Phase 1
+                  {applicant?.status || "accepted"}
                 </p>
+              </div>
+
+              <div className="space-y-1 border-t border-[rgba(198,198,198,0.2)] pt-4 md:pt-4.25">
+                <p className="text-[10px] font-bold uppercase tracking-[0.5px] text-[#6B7280]">
+                  Email
+                </p>
+                <p className="text-[16px] font-medium text-[#374151]">{applicant?.email || "N/A"}</p>
+              </div>
+
+              <div className="space-y-1 border-t border-[rgba(198,198,198,0.2)] pt-4 md:pt-4.25">
+                <p className="text-[10px] font-bold uppercase tracking-[0.5px] text-[#6B7280]">
+                  Phone Number
+                </p>
+                <p className="text-[16px] font-medium text-[#374151]">{applicant?.phoneNumber || "N/A"}</p>
               </div>
 
               <div className="space-y-1 border-t border-[rgba(198,198,198,0.2)] pt-4 md:col-span-2 md:pt-4.25">
                 <p className="text-[10px] font-bold uppercase tracking-[0.5px] text-[#6B7280]">
-                  Duration
+                  Expertise Level
                 </p>
                 <div className="flex items-center gap-2 text-[14px] font-medium text-[#374151]">
                   <CalendarDays size={14} />
-                  <p>March 17 - June 10, 2024</p>
+                  <p>{applicant?.expertiseLevel || "N/A"}</p>
                 </div>
               </div>
             </div>

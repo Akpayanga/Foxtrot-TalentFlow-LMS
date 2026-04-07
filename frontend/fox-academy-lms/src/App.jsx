@@ -19,6 +19,10 @@ import ModuleDetail from "./pages/ModuleDetail";
 import Assignments from "./pages/Assignments";
 import UserPersonaAssignment from "./pages/UserPersonaAssignment";
 import ApplicationAccepted from "./pages/ApplicationAccepted";
+import Dashboard from "./pages/Dashboard";
+import MyLearning from './pages/MyLearning';
+import Assignments from "./pages/Assignments";
+import UserPersonaAssignment from "./pages/UserPersonaAssignment";
 
 function App() {
   return (
@@ -33,6 +37,11 @@ function App() {
         <Route path="/application/success" element={<ApplicationReceived />} />
         <Route path="/application/success/link/:token" element={<ApplicationReceived />} />
         <Route path="/application/accepted" element={<ApplicationAccepted />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path='/mylearning' element={<MyLearning />} />
+        <Route path="/assignments" element={<Assignments />} />
+        <Route path="/assignments/user-persona" element={<UserPersonaAssignment />} />
+        <Route path="/learning/module" element={<LearnPreview />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/forgot-password/sent" element={<ForgotPasswordSent />} />
         <Route path="/welcome" element={<Welcome />} />

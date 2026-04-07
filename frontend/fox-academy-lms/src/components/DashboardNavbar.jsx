@@ -8,7 +8,7 @@ export default function DashboardNavbar() {
 
   const navLinks = [
     { name: "Home", path: "/dashboard" },
-    { name: "My Learning", path: "/learning" },
+    { name: "My Learning", path: "/mylearning" },
     { name: "Assignments", path: "/assignments" },
     { name: "Progress", path: "/progress" },
     { name: "Resources", path: "/resources" },
@@ -35,7 +35,7 @@ export default function DashboardNavbar() {
               key={link.name}
               to={link.path}
               className={`text-sm font-medium transition-colors hover:text-[#F38821] ${
-                currentPath === link.path || (link.name === "My Learning" && currentPath === "/dashboard")
+                currentPath === link.path || (link.name === "My Learning" && currentPath === "/mylearning")
                   ? "border-b-2 border-[#F38821] pb-1 text-[#F38821]"
                   : "text-gray-500"
               }`}
