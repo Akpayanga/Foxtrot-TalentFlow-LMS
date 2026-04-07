@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -23,6 +23,7 @@ import Resources from "./pages/Resources";
 import Community from "./pages/Community";
 import DiscussionDetail from "./pages/DiscussionDetail";
 import CreateDiscussion from "./pages/CreateDiscussion";
+import Progress from "./pages/Progress";
 
 function App() {
   return (
@@ -46,13 +47,7 @@ function App() {
         <Route path="/community" element={<Community />} />
         <Route path="/community/discussion/:id" element={<DiscussionDetail />} />
         <Route path="/community/create" element={<CreateDiscussion />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/forgot-password/sent" element={<ForgotPasswordSent />} />
-        <Route path="/welcome" element={<Welcome />} />
-        <Route path="/onboarding/profile" element={<SetProfile />} />
-        <Route path="/onboarding/team" element={<JoinTeam />} />
-        <Route path="/onboarding/learn" element={<LearnPreview />} />
-        <Route path="/onboarding/complete" element={<OnboardingComplete />} />
+        <Route path="/progress" element={<Progress />} />
       </Routes>
     </Router>
   );
