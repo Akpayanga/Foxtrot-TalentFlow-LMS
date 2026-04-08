@@ -2,17 +2,26 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Award,
-  ChevronDown,
   GraduationCap,
   Star,
   TrendingUp,
 } from "lucide-react";
+import { submitApplication } from "../services/applicationService";
 
 const expertiseOptions = [
   { key: "entry", label: "Entry", icon: GraduationCap },
   { key: "intermediate", label: "Intermediate", icon: TrendingUp },
   { key: "senior", label: "Senior", icon: Award },
   { key: "lead", label: "Lead", icon: Star },
+];
+
+const disciplineOptions = [
+  "UI/UX",
+  "Frontend",
+  "Backend",
+  "Data Science",
+  "Product Manager",
+  "Social Media",
 ];
 
 function SectionHeading({ step, title }) {
@@ -28,16 +37,20 @@ function SectionHeading({ step, title }) {
   );
 }
 
-function Field({ label, placeholder, type = "text" }) {
+function Field({ label, placeholder, type = "text", name, value, onChange, required = true }) {
   return (
     <label className="block">
       <span className="mb-2 block text-[12px] font-medium uppercase tracking-[0.6px] text-[#616161]">
         {label}
       </span>
       <input
+        name={name}
         type={type}
+        value={value}
+        onChange={onChange}
         placeholder={placeholder}
         className="w-full rounded-[4px] border border-[#D1D5DC] bg-white px-3 py-3 text-[16px] text-[#374151] placeholder:text-[#99A1AF] focus:border-[#F38821] focus:outline-none"
+        required={required}
       />
     </label>
   );
@@ -46,10 +59,52 @@ function Field({ label, placeholder, type = "text" }) {
 export default function ApplicationForm() {
   const navigate = useNavigate();
   const [selectedLevel, setSelectedLevel] = useState("intermediate");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    primaryDiscipline: "",
+    personalStatement: "",
+    portfolioUrl: "",
+    githubLinkedin: "",
+  });
 
-  const handleSubmit = (event) => {
+  const handleFieldChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    navigate("/application/success");
+    setSubmitError("");
+    setIsSubmitting(true);
+
+    const expertiseLabel = expertiseOptions.find(
+      (option) => option.key === selectedLevel
+    )?.label;
+
+    try {
+      const response = await submitApplication({
+        ...formData,
+        expertiseLevel: expertiseLabel,
+      });
+      navigate("/application/success", {
+        state: {
+          email: formData.email,
+          emailSent: response?.emailSent,
+          inviteCode: response?.invite?.code,
+          inviteLink: response?.invite?.link,
+        },
+      });
+    } catch (error) {
+      setSubmitError(
+        error?.response?.data?.message || "Could not submit application. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -69,18 +124,49 @@ export default function ApplicationForm() {
             <div className="space-y-6">
               <SectionHeading step="01" title="Identity Details" />
               <div className="grid gap-6 md:grid-cols-2">
-                <Field label="Full Name" placeholder="Amara Okoro" />
-                <Field label="Email Address" placeholder="amara@example.com" type="email" />
-                <Field label="Phone Number" placeholder="+234 000 000 0000" />
+                <Field
+                  label="Full Name"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleFieldChange}
+                  placeholder="Amara Okoro"
+                />
+                <Field
+                  label="Email Address"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleFieldChange}
+                  placeholder="amara@example.com"
+                  type="email"
+                />
+                <Field
+                  label="Phone Number"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleFieldChange}
+                  placeholder="+234 000 000 0000"
+                />
 
                 <label className="block">
                   <span className="mb-2 block text-[12px] font-medium uppercase tracking-[0.6px] text-[#616161]">
                     Primary Discipline
                   </span>
-                  <div className="flex items-center justify-between rounded-[4px] border border-[#D1D5DC] bg-white px-3 py-3 text-[16px] text-[#6B7280]">
-                    <span>Select Discipline</span>
-                    <ChevronDown size={20} className="text-[#6B7280]" />
-                  </div>
+                  <select
+                    name="primaryDiscipline"
+                    value={formData.primaryDiscipline}
+                    onChange={handleFieldChange}
+                    className="w-full rounded-[4px] border border-[#D1D5DC] bg-white px-3 py-3 text-[16px] text-[#374151] focus:border-[#F38821] focus:outline-none"
+                    required
+                  >
+                    <option value="" disabled>
+                      Select Discipline
+                    </option>
+                    {disciplineOptions.map((discipline) => (
+                      <option key={discipline} value={discipline}>
+                        {discipline}
+                      </option>
+                    ))}
+                  </select>
                 </label>
               </div>
             </div>
@@ -116,25 +202,50 @@ export default function ApplicationForm() {
                   Personal Statement or Motivation
                 </span>
                 <textarea
+                  name="personalStatement"
+                  value={formData.personalStatement}
+                  onChange={handleFieldChange}
                   rows={6}
                   placeholder="Tell us why you are interested in joining Trueminds internship..."
                   className="w-full resize-none rounded-[10px] border border-[#D1D5DC] bg-white px-4 py-3 text-[16px] text-[#374151] placeholder:text-[#99A1AF] focus:border-[#F38821] focus:outline-none"
+                  required
                 />
               </label>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <Field label="Portfolio URL" placeholder="e.g https://yourportfolio.com" />
-                <Field label="Github / LinkedIn" placeholder="e.g https://linkedin.com/amara" />
+                <Field
+                  label="Portfolio URL"
+                  name="portfolioUrl"
+                  value={formData.portfolioUrl}
+                  onChange={handleFieldChange}
+                  placeholder="e.g https://yourportfolio.com"
+                  required={false}
+                />
+                <Field
+                  label="Github / LinkedIn"
+                  name="githubLinkedin"
+                  value={formData.githubLinkedin}
+                  onChange={handleFieldChange}
+                  placeholder="e.g https://linkedin.com/amara"
+                  required={false}
+                />
               </div>
             </div>
+
+            {submitError ? (
+              <p className="rounded-[6px] border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-[14px] text-[#B91C1C]">
+                {submitError}
+              </p>
+            ) : null}
 
             <div className="border-t border-[#D1D5DC] pt-8">
               <div className="flex justify-end">
                 <button
                   type="submit"
+                  disabled={isSubmitting}
                   className="rounded-[10px] bg-[#F38821] px-6 py-3 text-[16px] font-bold text-white transition hover:bg-[#E37B1D]"
                 >
-                  Submit Application
+                  {isSubmitting ? "Submitting..." : "Submit Application"}
                 </button>
               </div>
             </div>

@@ -25,7 +25,7 @@ export default function Landing() {
             </h1>
 
             <p className="mt-8 max-w-[640px] text-[16px] leading-relaxed text-[#374151]">
-              TalentFlow is Trueminds&apos; official learning environment for interns,
+              Fox Academy is Trueminds&apos; official learning environment for interns,
               mentors, and team leads. Access your courses, track your progress,
               collaborate with your cohort, and build real products that solve real
               business problems.
@@ -54,7 +54,7 @@ export default function Landing() {
 
           <img
             src={auth1}
-            alt="Student on TalentFlow"
+            alt="Student on Fox Academy"
             className="h-full w-full object-cover"
           />
         </div>

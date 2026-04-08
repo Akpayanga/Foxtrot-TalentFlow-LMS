@@ -224,7 +224,7 @@ export default function Login() {
             {/* SIGNUP LINK */}
             <div className="text-center mb-4">
               <p className="text-[#374151] text-sm">
-                New to TalentFlow?{" "}
+                New to Fox Academy?{" "}
                 <Link
                   to="/application"
                   className="text-[#F38821] hover:text-[#e37b1d] font-medium"
