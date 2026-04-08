@@ -2,7 +2,7 @@ const User = require("../models/user.model");
 const ApiError = require("../utilities/apiError.util");
 const { success } = require("../utilities/response");
 const crypto = require("crypto");
-const { enqueueVerificationEmail } = require("../service/emaill.service");
+const { enqueueVerificationEmail } = require("../service/email.service");
 const { recordAudit } = require("../utilities/audit.util");
 
 exports.adminRegister = async (req, res, next) => {

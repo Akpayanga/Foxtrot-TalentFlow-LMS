@@ -22,12 +22,13 @@ const courseProgressRoutes = require("./routes/courseProgress.routes");
 const mediaRoutes = require("./routes/media.route");
 const learningRoutes = require("./routes/learning.route");
 const discussionRoutes = require("./routes/discussion.route");
+const managementRoutes = require("./routes/management.route");
 
 // Utilities
 const { success } = require("./utilities/response");
 
 // Error handler
-const errorHandler = require("./middleware/errrorHandler.middleware");
+const errorHandler = require("./middleware/errorHandler.middleware");
 
 const app = express();
 app.disable("x-powered-by");
@@ -57,6 +58,7 @@ app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/applications", applicationRoutes);
 app.use("/api/v1/learning", learningRoutes);
 app.use("/api/v1/community", discussionRoutes);
+app.use("/api/v1/management", managementRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/course-progress", courseProgressRoutes);
 app.use("/api/v1/media", mediaRoutes);

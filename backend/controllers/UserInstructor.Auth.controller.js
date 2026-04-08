@@ -7,7 +7,7 @@ const {
   verifyToken,
 } = require("../utilities/jwt");
 const crypto = require("crypto");
-const { enqueueVerificationEmail } = require("../service/emaill.service");
+const { enqueueVerificationEmail } = require("../service/email.service");
 const { recordAudit } = require("../utilities/audit.util");
 
 // Pre-register (students/instructors)
