@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -21,8 +21,8 @@ import UserPersonaAssignment from "./pages/UserPersonaAssignment";
 import Progress from "./pages/Progress";
 import Resources from "./pages/Resources";
 import Community from "./pages/Community";
-
-
+import TeamDirectory from "./pages/TeamDirectory";
+import WorkBoard from "./pages/WorkBoard";
 
 function App() {
   return (
@@ -44,6 +44,10 @@ function App() {
         <Route path="/onboarding/learn" element={<LearnPreview />} />
         <Route path="/onboarding/complete" element={<OnboardingComplete />} />
         <Route path="/watch-course" element={<WatchCourse />} />
+        <Route
+          path="/course/:courseId/module/:moduleId"
+          element={<WatchCourse />}
+        />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/mylearning" element={<MyLearning />} />
         <Route path="/mylearning/module" element={<MyLearning />} />
@@ -52,6 +56,8 @@ function App() {
         <Route path="/progress" element={<Progress />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/community" element={<Community />} />
+        <Route path="/team" element={<TeamDirectory />} />
+        <Route path="/work-board" element={<WorkBoard />} />
       </Routes>
     </Router>
   );
