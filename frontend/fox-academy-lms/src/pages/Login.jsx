@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import auth2 from "../assets/images/auth2.png";
 import { loginUser } from "../services/authService";
+import { isOnboardingComplete } from "../services/onboardingService";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -15,6 +19,60 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const prefilledEmail = location.state?.email || searchParams.get("email") || "";
+    if (prefilledEmail) {
+      setFormData((prev) => ({ ...prev, email: prefilledEmail }));
+    }
+  }, [location.state, searchParams]);
+
+  useEffect(() => {
+    const oauth = searchParams.get("oauth");
+    const oauthError = searchParams.get("oauthError");
+
+    if (oauthError === "1") {
+      setApiError("Google login failed. Please try again.");
+      return;
+    }
+
+    if (oauth !== "1") {
+      return;
+    }
+
+    const token = searchParams.get("token") || "";
+    const firstName = searchParams.get("firstName") || "";
+    const lastName = searchParams.get("lastName") || "";
+    const role = searchParams.get("role") || "student";
+    const course = searchParams.get("course") || "";
+
+    if (!token) {
+      setApiError("Google login did not return a valid token.");
+      return;
+    }
+
+    localStorage.setItem("authToken", token);
+    if (firstName) {
+      localStorage.setItem("currentUserFirstName", firstName);
+    }
+    localStorage.setItem(
+      "currentUserProfile",
+      JSON.stringify({
+        firstName,
+        lastName,
+        role,
+        course,
+      })
+    );
+
+    sessionStorage.setItem("authFlash", "google-login-success");
+
+    navigate("/dashboard", { replace: true });
+  }, [navigate, searchParams]);
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${apiBaseUrl}/auth/google`;
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -46,12 +104,42 @@ export default function Login() {
 
       try {
         const data = await loginUser(formData);
+        const authToken = data?.token || data?.accessToken || data?.data?.token || data?.data?.accessToken;
+        const user = data?.user || data?.data?.user;
+        const isNewUserLogin = searchParams.get("newUser") === "1" || location.state?.newUser === true;
 
-        if (data?.token) {
-          localStorage.setItem("authToken", data.token);
+        if (authToken) {
+          localStorage.setItem("authToken", authToken);
         }
 
-        navigate("/welcome");
+        if (user?.firstName) {
+          localStorage.setItem("currentUserFirstName", user.firstName);
+        }
+
+        if (user) {
+          localStorage.setItem(
+            "currentUserProfile",
+            JSON.stringify({
+              firstName: user.firstName || "",
+              lastName: user.lastName || "",
+              role: user.role || "student",
+              course: user.course || "",
+            })
+          );
+        }
+
+        if (isNewUserLogin && !isOnboardingComplete()) {
+          navigate("/welcome", {
+            state: {
+              firstName: user?.firstName,
+              lastName: user?.lastName,
+              role: user?.role,
+              course: user?.course,
+            },
+          });
+        } else {
+          navigate("/dashboard");
+        }
       } catch (error) {
         const message =
           error?.response?.data?.message ||
@@ -103,7 +191,11 @@ export default function Login() {
             </p>
 
             {/* GOOGLE BUTTON */}
-            <button className="w-full border-2 border-[#F38821] rounded-xl py-3 text-[#F38821] font-medium flex items-center justify-center gap-2 transition hover:bg-[#FEF3E9] mb-6">
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              className="w-full border-2 border-[#F38821] rounded-xl py-3 text-[#F38821] font-medium flex items-center justify-center gap-2 transition hover:bg-[#FEF3E9] mb-6"
+            >
               <svg
                 className="w-5 h-5"
                 viewBox="0 0 24 24"

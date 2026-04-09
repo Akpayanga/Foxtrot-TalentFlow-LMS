@@ -1,6 +1,7 @@
 import React from "react";
 import { ChevronRight, Play, BookOpen, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { setOnboardingStep } from "../services/onboardingService";
 
 /**
  * Onboarding Step 4: Learn Preview
@@ -8,6 +9,16 @@ import { useNavigate } from "react-router-dom";
  */
 const LearnPreview = () => {
   const navigate = useNavigate();
+
+  const handleContinue = () => {
+    setOnboardingStep("learn", "completed");
+    navigate("/onboarding/complete");
+  };
+
+  const handleSkip = () => {
+    setOnboardingStep("learn", "skipped");
+    navigate("/onboarding/complete");
+  };
 
   const learningItems = [
     {
@@ -101,20 +112,20 @@ const LearnPreview = () => {
 
       {/* 4. Footer & Action Buttons */}
       <div className="mt-16 flex w-full max-w-4xl flex-col items-center space-y-6 px-4 text-center">
-        <p className="max-w-[760px] text-sm font-medium text-[#6B7280]">
+        <p className="max-w-190 text-sm font-medium text-[#6B7280]">
           You'll find all your learning materials and project tasks on your dashboard.
         </p>
         
         <button
-          onClick={() => navigate("/onboarding/complete")} 
+          onClick={handleContinue}
           className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#F38821] py-4.5 text-lg font-bold text-white shadow-lg transition-all hover:bg-[#e37b1d] active:scale-[0.98]"
         >
-          Go to My Dashboard
+          Continue
           <ChevronRight size={22} className="transition-transform group-hover:translate-x-1" />
         </button>
         
         <button
-          onClick={() => navigate("/dashboard")} // Skip to dashboard
+          onClick={handleSkip}
           className="text-sm font-semibold text-[#6B7280] transition-colors hover:text-[#111827]"
         >
           Skip for now

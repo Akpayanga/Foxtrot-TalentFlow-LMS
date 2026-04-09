@@ -23,3 +23,23 @@ export async function resendInviteCode(payload) {
   const response = await applicationClient.post("/applications/resend-invite", payload);
   return response.data;
 }
+
+export async function getApplicantByInvite(payload) {
+  const response = await applicationClient.post("/applications/verify-invite", payload);
+  return response.data;
+}
+
+export async function completeApplicantRegistration(payload) {
+  const response = await applicationClient.post("/applications/complete-registration", payload);
+  return response.data;
+}
+
+export async function verifyAccountEmail(payload) {
+  const response = await applicationClient.post("/applications/verify-email", payload);
+  return response.data;
+}
+
+export async function resendAccountVerificationEmail(payload) {
+  const response = await applicationClient.post("/applications/resend-email-verification", payload);
+  return response.data;
+}

@@ -2,6 +2,7 @@ import React from "react";
 import { ChevronRight, CheckCircle2, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import celebrationHero from "../assets/images/celebration_hero.png";
+import { completeOnboarding, setOnboardingStep } from "../services/onboardingService";
 
 /**
  * Onboarding Step 5: Onboarding Complete
@@ -10,9 +11,21 @@ import celebrationHero from "../assets/images/celebration_hero.png";
 const OnboardingComplete = () => {
   const navigate = useNavigate();
 
+  const handleFinish = () => {
+    setOnboardingStep("complete", "completed");
+    completeOnboarding();
+    navigate("/dashboard");
+  };
+
+  const handleSkip = () => {
+    setOnboardingStep("complete", "skipped");
+    completeOnboarding();
+    navigate("/dashboard");
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#F9FAFB] p-4 font-sans">
-      <div className="w-full max-w-[540px] rounded-[24px] bg-white p-10 shadow-[0_10px_50px_rgba(0,0,0,0.06)]">
+      <div className="w-full max-w-135 rounded-3xl bg-white p-10 shadow-[0_10px_50px_rgba(0,0,0,0.06)]">
         
         {/* 1. Validation Badge */}
         <div className="flex justify-center mb-8">
@@ -23,11 +36,11 @@ const OnboardingComplete = () => {
         </div>
 
         {/* 2. Hero Image Section */}
-        <div className="mb-10 overflow-hidden rounded-[16px]">
+        <div className="mb-10 overflow-hidden rounded-2xl">
           <img
             src={celebrationHero}
             alt="Success celebration"
-            className="h-[280px] w-full object-cover transition-transform duration-700 hover:scale-105"
+            className="h-70 w-full object-cover transition-transform duration-700 hover:scale-105"
           />
         </div>
 
@@ -75,11 +88,19 @@ const OnboardingComplete = () => {
 
         {/* 5. Action Button */}
         <button
-          onClick={() => navigate("/dashboard")}
+          onClick={handleFinish}
           className="group flex w-full items-center justify-center gap-2 rounded-[14px] bg-[#F38821] py-5 text-[16px] font-bold text-white shadow-[0_8px_30px_rgba(243,136,33,0.3)] transition-all hover:bg-[#e37b1d] active:scale-[0.98]"
         >
-          Complete My Registration
+          Go to Dashboard
           <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" />
+        </button>
+
+        <button
+          type="button"
+          onClick={handleSkip}
+          className="mt-4 w-full text-center text-sm font-semibold text-[#6B7280] transition-colors hover:text-[#111827]"
+        >
+          Skip and Continue
         </button>
       </div>
     </div>

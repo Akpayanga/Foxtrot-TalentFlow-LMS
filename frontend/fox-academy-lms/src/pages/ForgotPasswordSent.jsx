@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Mail } from "lucide-react";
 import { resendPasswordReset } from "../services/authService";
 
 export default function ForgotPasswordSent() {
   const navigate = useNavigate();
   const location = useLocation();
-  const email = location.state?.email || "amara@gmail.com";
+  const [searchParams] = useSearchParams();
+  const email = location.state?.email || searchParams.get("email") || "";
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
   const [apiMessage, setApiMessage] = useState("");
@@ -42,8 +43,14 @@ export default function ForgotPasswordSent() {
           Reset link sent!
         </h1>
         <p className="mb-6 text-center text-[16px] leading-normal text-[#6B7280]">
-          Check your inbox at <span className="font-medium text-[#111827]">{email}</span>. If
-          you don&apos;t see it, check your spam folder.
+          {email ? (
+            <>
+              Check your inbox at <span className="font-medium text-[#111827]">{email}</span>. If
+              you don&apos;t see it, check your spam folder.
+            </>
+          ) : (
+            <>Enter your email again to resend a reset link.</>
+          )}
         </p>
 
         {apiMessage ? (
@@ -61,10 +68,10 @@ export default function ForgotPasswordSent() {
         <button
           type="button"
           onClick={handleResend}
-          disabled={isLoading}
+          disabled={isLoading || !email}
           className="w-full rounded-[10px] border border-[#F38821] bg-transparent px-4 py-3.5 text-[15px] font-semibold text-[#F38821] transition hover:bg-[#F38821]/5 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isLoading ? "Sending..." : "Reset Link"}
+          {isLoading ? "Sending..." : "Resend Reset Link"}
         </button>
 
         <button

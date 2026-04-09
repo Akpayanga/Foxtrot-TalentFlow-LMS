@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import DashboardNavbar from "../components/DashboardNavbar";
 import DashboardSidebar from "../components/DashboardSidebar";
 import { WelcomeBanner, CapstoneProjectCard } from "../components/DashboardContent";
@@ -10,6 +11,31 @@ import auth2 from "../assets/images/auth2.png";
 import auth3 from "../assets/images/auth3.png";
 
 export default function Dashboard() {
+  const [showGoogleBanner, setShowGoogleBanner] = useState(false);
+  const [firstName, setFirstName] = useState("Learner");
+
+  useEffect(() => {
+    const flash = sessionStorage.getItem("authFlash");
+    if (flash === "google-login-success") {
+      setShowGoogleBanner(true);
+      sessionStorage.removeItem("authFlash");
+    }
+
+    const profileRaw = localStorage.getItem("currentUserProfile");
+    if (!profileRaw) {
+      return;
+    }
+
+    try {
+      const profile = JSON.parse(profileRaw);
+      if (profile?.firstName) {
+        setFirstName(profile.firstName);
+      }
+    } catch {
+      setFirstName(localStorage.getItem("currentUserFirstName") || "Learner");
+    }
+  }, []);
+
   const activeCourses = [
     {
       thumbnail: auth1,
@@ -43,8 +69,21 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
           {/* Left Column: Main Content */}
           <div className="space-y-12">
+            {showGoogleBanner ? (
+              <div className="flex items-center justify-between rounded-xl border border-[#F9C899] bg-[#FFF8F1] px-4 py-3 text-sm text-[#9A3412]">
+                <p className="font-medium">Signed in with Google successfully.</p>
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleBanner(false)}
+                  className="font-semibold text-[#C2410C] hover:underline"
+                >
+                  Dismiss
+                </button>
+              </div>
+            ) : null}
+
             {/* Welcome Section */}
-            <WelcomeBanner name="Amara" progress={18} />
+            <WelcomeBanner name={firstName} progress={18} />
 
             {/* Courses Section */}
             <div className="space-y-6">

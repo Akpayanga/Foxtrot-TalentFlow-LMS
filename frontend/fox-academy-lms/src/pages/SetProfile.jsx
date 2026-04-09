@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Camera, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { setOnboardingStep } from "../services/onboardingService";
 
 /**
  * Onboarding Step 2: Set Up Your Profile
@@ -25,6 +26,12 @@ const SetProfile = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setOnboardingStep("profile", "completed");
+    navigate("/onboarding/team");
+  };
+
+  const handleSkip = () => {
+    setOnboardingStep("profile", "skipped");
     navigate("/onboarding/team");
   };
 
@@ -134,6 +141,7 @@ const SetProfile = () => {
           </button>
           <button
             type="button"
+            onClick={handleSkip}
             className="text-sm font-bold text-[#F38821] hover:text-[#e37b1d]"
           >
             Skip for now

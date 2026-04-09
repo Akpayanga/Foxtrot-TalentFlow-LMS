@@ -53,11 +53,14 @@ export default function Start() {
         code: inviteCode,
       });
 
-      navigate("/application/accepted", {
+      navigate(
+        `/application/accepted?email=${encodeURIComponent(email)}&code=${encodeURIComponent(inviteCode)}`,
+        {
         state: {
           applicant: response?.data,
         },
-      });
+        }
+      );
     } catch (requestError) {
       setError(
         requestError?.response?.data?.message ||

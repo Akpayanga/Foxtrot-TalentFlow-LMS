@@ -1,25 +1,125 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import auth3 from "../assets/images/auth3.png";
+import {
+  completeApplicantRegistration,
+  getApplicantByInvite,
+} from "../services/applicationService";
 
 export default function Signup() {
+  const isDev = import.meta.env.DEV;
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [applicant, setApplicant] = useState(null);
+  const [formState, setFormState] = useState({
+    password: "",
+    confirmPassword: "",
+  });
 
-  // Temporary mock values representing data prefilled from backend application records.
-  const applicant = {
-    fullName: "Amara Okoro",
-    email: "amara@example.com",
-    phone: "+234 000 000 0000",
-    discipline: "UI/UX Design",
+  const applicantFromState = location.state?.applicant || null;
+  const email = applicantFromState?.email || searchParams.get("email") || "";
+  const code = applicantFromState?.inviteCode || searchParams.get("code") || "";
+
+  useEffect(() => {
+    if (applicantFromState?.email && applicantFromState?.inviteCode) {
+      setApplicant(applicantFromState);
+      setIsLoading(false);
+      return;
+    }
+
+    if (!email || !code) {
+      if (isDev) {
+        setApplicant({
+          fullName: "Preview User",
+          email: "preview@example.com",
+          phoneNumber: "+234 800 000 0000",
+          primaryDiscipline: "Frontend",
+          inviteCode: "DEV-PREVIEW-CODE",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      navigate("/", { replace: true });
+      return;
+    }
+
+    const loadApplicant = async () => {
+      setError("");
+      setIsLoading(true);
+      try {
+        const response = await getApplicantByInvite({ email, code });
+        setApplicant(response?.data || null);
+      } catch (requestError) {
+        setError(
+          requestError?.response?.data?.message ||
+            "We could not load your application details. Please use the invite link from your email."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadApplicant();
+  }, [applicantFromState, code, email, isDev, navigate]);
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    navigate("/verify-email");
+
+    if (!email || !code) {
+      setError("Invalid invite link. Please use your email link.");
+      return;
+    }
+
+    if (formState.password !== formState.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setError("");
+    setIsSubmitting(true);
+    try {
+      await completeApplicantRegistration({
+        email,
+        code,
+        password: formState.password,
+        confirmPassword: formState.confirmPassword,
+      });
+
+      navigate("/verify-email", {
+        state: {
+          email,
+        },
+      });
+    } catch (requestError) {
+      setError(
+        requestError?.response?.data?.message ||
+          "Could not create your account right now. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F4F4F4] text-[#374151]">
+        Loading your application details...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -60,13 +160,19 @@ export default function Signup() {
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
+              {error ? (
+                <p className="rounded-[10px] border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#B91C1C]">
+                  {error}
+                </p>
+              ) : null}
+
               <div>
                 <label className="mb-2 block text-[13px] font-medium text-[#111827]">
                   Full Name
                 </label>
                 <input
                   type="text"
-                  value={applicant.fullName}
+                  value={applicant?.fullName || ""}
                   readOnly
                   className="w-full rounded-[10px] border border-[#D1D5DC] bg-[#EEF0F3] px-4 py-3 text-[13px] text-[#4B5563]"
                 />
@@ -78,7 +184,7 @@ export default function Signup() {
                 </label>
                 <input
                   type="email"
-                  value={applicant.email}
+                  value={applicant?.email || ""}
                   readOnly
                   className="w-full rounded-[10px] border border-[#D1D5DC] bg-[#EEF0F3] px-4 py-3 text-[13px] text-[#4B5563]"
                 />
@@ -91,7 +197,7 @@ export default function Signup() {
                   </label>
                   <input
                     type="text"
-                    value={applicant.phone}
+                    value={applicant?.phoneNumber || ""}
                     readOnly
                     className="w-full rounded-[10px] border border-[#D1D5DC] bg-[#EEF0F3] px-4 py-3 text-[13px] text-[#4B5563]"
                   />
@@ -103,7 +209,7 @@ export default function Signup() {
                   </label>
                   <input
                     type="text"
-                    value={applicant.discipline}
+                    value={applicant?.primaryDiscipline || ""}
                     readOnly
                     className="w-full rounded-[10px] border border-[#D1D5DC] bg-[#EEF0F3] px-4 py-3 text-[13px] text-[#4B5563]"
                   />
@@ -116,9 +222,13 @@ export default function Signup() {
                 </label>
                 <div className="relative">
                   <input
+                    name="password"
                     type={showPassword ? "text" : "password"}
+                    value={formState.password}
+                    onChange={handleInputChange}
                     placeholder="Minimum 8 characters"
                     className="w-full rounded-[10px] border border-[#D1D5DC] bg-white px-4 py-3 pr-11 text-[13px] placeholder:text-[#99A1AF] focus:border-[#F38821] focus:outline-none"
+                    required
                   />
                   <button
                     type="button"
@@ -137,9 +247,13 @@ export default function Signup() {
                 </label>
                 <div className="relative">
                   <input
+                    name="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
+                    value={formState.confirmPassword}
+                    onChange={handleInputChange}
                     placeholder="Re-enter your password"
                     className="w-full rounded-[10px] border border-[#D1D5DC] bg-white px-4 py-3 pr-11 text-[13px] placeholder:text-[#99A1AF] focus:border-[#F38821] focus:outline-none"
+                    required
                   />
                   <button
                     type="button"
@@ -154,9 +268,10 @@ export default function Signup() {
 
               <button
                 type="submit"
+                disabled={isSubmitting || !applicant}
                 className="w-full rounded-[10px] bg-[#F38821] px-4 py-3 text-[16px] font-bold text-white transition hover:bg-[#e37b1d]"
               >
-                Create My Account
+                {isSubmitting ? "Creating Account..." : "Create My Account"}
               </button>
             </form>
 

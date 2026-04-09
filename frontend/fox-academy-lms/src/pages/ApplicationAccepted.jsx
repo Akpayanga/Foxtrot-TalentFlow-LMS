@@ -7,13 +7,21 @@ const HERO_IMAGE = welcome1;
 export default function ApplicationAccepted() {
   const { token } = useParams();
   const location = useLocation();
-  const queryToken = new URLSearchParams(location.search).get("token");
+  const queryParams = new URLSearchParams(location.search);
+  const queryToken = queryParams.get("token");
+  const queryEmail = queryParams.get("email");
+  const queryCode = queryParams.get("code");
   const accessToken = token || queryToken;
   const applicant = location.state?.applicant;
+  const inviteEmail = applicant?.email || queryEmail;
+  const inviteCode = applicant?.inviteCode || queryCode;
   const firstName = applicant?.fullName?.split(" ")?.[0] || "Applicant";
   const position = applicant?.primaryDiscipline
     ? `${applicant.primaryDiscipline} Intern`
     : "Intern";
+  const signupLink = inviteEmail && inviteCode
+    ? `/signup?email=${encodeURIComponent(inviteEmail)}&code=${encodeURIComponent(inviteCode)}`
+    : "/signup";
 
   return (
     <div
@@ -26,7 +34,7 @@ export default function ApplicationAccepted() {
             <div className="inline-flex items-center gap-3 rounded-full bg-[#FEF3E9] px-6 py-3">
               <BadgeCheck size={16} className="text-[#F38821]" />
               <p className="text-[12px] font-bold uppercase tracking-[1.4px] text-[#6B7280] md:text-[14px]">
-                CODE VALIDATED: {applicant?.inviteCode || "N/A"}
+                CODE VALIDATED: {inviteCode || "N/A"}
               </p>
             </div>
           </div>
@@ -95,7 +103,8 @@ export default function ApplicationAccepted() {
           </div>
 
           <Link
-            to="/signup"
+            to={signupLink}
+            state={{ applicant }}
             className="flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-[#F38821] px-4 py-3 text-[16px] font-medium text-white transition hover:bg-[#e47d1e]"
           >
             Complete My Registration
