@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Navigate, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -13,23 +13,17 @@ import LearnPreview from "./pages/LearnPreview";
 import OnboardingComplete from "./pages/OnboardingComplete";
 import ApplicationForm from "./pages/ApplicationForm";
 import ApplicationReceived from "./pages/ApplicationReceived";
+import ApplicationAccepted from "./pages/ApplicationAccepted";
 import Dashboard from "./pages/Dashboard";
 import MyLearning from "./pages/MyLearning";
 import ModuleDetail from "./pages/ModuleDetail";
 import Assignments from "./pages/Assignments";
 import UserPersonaAssignment from "./pages/UserPersonaAssignment";
 import ApplicationAccepted from "./pages/ApplicationAccepted";
-import { isOnboardingComplete } from "./services/onboardingService";
-
-function DashboardGate({ children }) {
-  if (!isOnboardingComplete()) {
-    return <Navigate to="/onboarding/profile" replace />;
-  }
-
-  return children;
-}
-
-
+import Dashboard from "./pages/Dashboard";
+import MyLearning from './pages/MyLearning';
+import Assignments from "./pages/Assignments";
+import UserPersonaAssignment from "./pages/UserPersonaAssignment";
 
 function App() {
   return (
@@ -44,9 +38,10 @@ function App() {
         <Route path="/application/success" element={<ApplicationReceived />} />
         <Route path="/application/success/link/:token" element={<ApplicationReceived />} />
         <Route path="/application/accepted" element={<ApplicationAccepted />} />
-        
-        
-    
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path='/mylearning' element={<MyLearning />} />
+        <Route path="/assignments" element={<Assignments />} />
+        <Route path="/assignments/user-persona" element={<UserPersonaAssignment />} />
         <Route path="/learning/module" element={<LearnPreview />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/forgot-password/sent" element={<ForgotPasswordSent />} />
@@ -55,7 +50,7 @@ function App() {
         <Route path="/onboarding/team" element={<JoinTeam />} />
         <Route path="/onboarding/learn" element={<LearnPreview />} />
         <Route path="/onboarding/complete" element={<OnboardingComplete />} />
-        <Route path="/dashboard" element={<DashboardGate><Dashboard /></DashboardGate>} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/learning" element={<MyLearning />} />
         <Route path="/learning/module" element={<ModuleDetail />} />
         <Route path="/assignments" element={<Assignments />} />
