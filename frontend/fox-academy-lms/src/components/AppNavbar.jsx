@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, Settings, LogOut } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import foxLogo from '../assets/images/foxlogo.svg';
+import ProfileDropdown from './ProfileDropdown';
+import amaraImg from '../assets/images/amara.jpg';
 
 export default function AppNavbar() {
   const location = useLocation();
@@ -26,8 +28,8 @@ export default function AppNavbar() {
       <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between px-5 md:px-10 h-16">
         <div className="flex items-center gap-10">
           {/* Logo */}
-          <div className="flex items-start gap-3">
-            <img src={foxLogo} alt="Fox Academy Logo" className="h-6 w-6" />
+          <div className="flex items-start gap-3 shrink-0 lg:w-48">
+            <img src={foxLogo} alt="Fox Academy Logo" className="h-6 w-6 mt-1" />
             <div>
               <h1 className="text-[20px] md:text-[24px] font-bold leading-none text-[#F38821]">
                 Fox<br />Academy
@@ -80,32 +82,11 @@ export default function AppNavbar() {
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="h-8 w-8 rounded-full bg-gray-300 overflow-hidden outline-none focus:ring-2 focus:ring-[#F38821] focus:ring-offset-2 transition-all block cursor-pointer border border-transparent"
             >
-              <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Profile" className="w-full h-full object-cover" />
+              <img src={amaraImg} alt="Profile" className="w-full h-full object-cover" />
             </button>
 
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 rounded-xl bg-white shadow-lg ring-1 ring-orange-500 ring-opacity-5 divide-y divide-gray-100 z-50">
-                <div className="py-1">
-                  <Link 
-                    to="/settings" 
-                    className="group flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#F38821] transition-colors"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    <Settings className="mr-3 h-4 w-4 text-gray-400 group-hover:text-[#F38821] transition-colors" />
-                    Settings
-                  </Link>
-                </div>
-                <div className="py-1">
-                  <Link 
-                    to="/login" 
-                    className="group flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    <LogOut className="mr-3 h-4 w-4 text-red-500 group-hover:text-red-600 transition-colors" />
-                    Log out
-                  </Link>
-                </div>
-              </div>
+              <ProfileDropdown onClose={() => setIsDropdownOpen(false)} />
             )}
           </div>
         </div>

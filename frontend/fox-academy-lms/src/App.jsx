@@ -27,6 +27,8 @@ import DiscussionDetail from "./pages/DiscussionDetail";
 import TeamDirectory from "./pages/TeamDirectory";
 import WorkBoard from "./pages/WorkBoard";
 import ModuleDetail from "./pages/ModuleDetail";
+import Profile from "./pages/Profile";
+import CertificationBadges from "./pages/CertificationBadges";
 
 function App() {
   return (
@@ -50,10 +52,7 @@ function App() {
         <Route path="/watch-course" element={<WatchCourse />} />
         <Route path="/progress" element={<MyProgress />} />
         <Route path="/progressNew" element={<MyProgressNew />} />
-        <Route
-          path="/course/:courseId/module/:moduleId"
-          element={<WatchCourse />}
-        />
+        <Route path="/course/:courseId/module/:moduleId" element={<WatchCourse />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/mylearning" element={<MyLearning />} />
         <Route path="/mylearning/module" element={<ModuleDetail />} />
@@ -67,6 +66,8 @@ function App() {
         <Route path="/community/discussion/:id" element={<DiscussionDetail />} />
         <Route path="/team" element={<TeamDirectory />} />
         <Route path="/work-board" element={<WorkBoard />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/certificates" element={<CertificationBadges />} />
       </Routes>
     </Router>
   );
