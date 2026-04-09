@@ -1,21 +1,27 @@
 require("dotenv").config();
 const { Worker } = require("bullmq");
 const connection = require("../utilities/redis.util");
-const { sendVerificationEmail } = require("../utilities/email.util");
+const {
+  sendVerificationEmail,
+  sendWelcomeEmail,
+} = require("../utilities/email.util");
 
 console.log("🚀 Email worker started...");
 const handlers = {
   sendVerificationEmail: async (data) => {
-    console.log("Processing job:", data); 
+    console.log("Processing job:", data);
     if (!data.email || !data.code) {
       throw new Error("Missing email or code");
     }
 
-    await sendVerificationEmail(data.email, data.token, data.code);
+    await sendVerificationEmail(data.email, data.token, data.code, data.role);
   },
 
   sendWelcomeEmail: async (data) => {
-    console.log(`Sending welcome email to ${data.email}`);
+    if (!data.email) {
+      throw new Error("Missing email");
+    }
+    await sendWelcomeEmail(data.email);
   },
 };
 
@@ -30,7 +36,7 @@ const emailWorker = new Worker(
 
     await handler(job.data);
   },
-  { connection }
+  { connection },
 );
 
 emailWorker.on("completed", (job) => {

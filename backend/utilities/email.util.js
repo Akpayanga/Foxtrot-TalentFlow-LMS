@@ -25,26 +25,49 @@ if (process.env.NODE_ENV === "development") {
   });
 }
 
-const sendVerificationEmail = async (email, token, code) => {
+const sendVerificationEmail = async (email, token, code, role) => {
   try {
-    const url = `${process.env.CLIENT_URL}/verify-invitation?token=${token}`;
+    const url = `${process.env.CLIENT_URL}/verify-invitation?token=${token}&code=${code}`;
     const expiryHours =
       role === "student"
         ? process.env.INVITE_EXPIRY_HOURS_STUDENT || 48
         : role === "instructor"
           ? process.env.INVITE_EXPIRY_HOURS_INSTRUCTOR || 72
           : process.env.INVITE_EXPIRY_HOURS_DEFAULT || 24;
+
     const info = await transporter.sendMail({
       from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
       to: email,
       subject: "Your Fox Academy Invitation",
+      // "X-Priority": "1",
+
+      text: `Verify your invitation: ${url}`,
       html: `
-        <h2>Welcome to Fox Academy 🎉</h2>
-        <p>Your invitation code is: <strong>${code}</strong></p>
-        <p>Click the link below to verify your invitation:</p>
-        <a href="${url}">Verify Invitation</a>
-        <p>This link expires in ${expiryHours} hours.</p>
-        `,
+<!DOCTYPE html>
+<html>
+  <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+
+    <h2>Welcome to Fox Academy 🎉</h2>
+
+    <p>Your invitation code is:</p>
+    <p><strong>${code}</strong></p>
+
+    <p>Click the link below to verify your invitation:</p>
+
+    <p>
+      <a href="${url}" target="_blank">
+        Verify Invitation
+      </a>
+    </p>
+
+    <p>Or copy and paste this link into your browser:</p>
+    <p>${url}</p>
+
+    <p>This link expires in ${expiryHours} hours.</p>
+
+  </body>
+</html>
+`,
     });
 
     console.log("Email sent:", info.response);
@@ -54,4 +77,26 @@ const sendVerificationEmail = async (email, token, code) => {
   }
 };
 
-module.exports = { sendVerificationEmail };
+const sendWelcomeEmail = async (email) => {
+  try {
+    const info = await transporter.sendMail({
+      from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Welcome to Fox Academy 🎉",
+      // "X-Priority": "1",
+      html: `
+        <h2>Welcome aboard!</h2>
+        <p>Your invitation has been successfully verified.</p>
+        <p>We’re excited to have you join Fox Academy. You can now continue your registration and start exploring your dashboard.</p>
+        <p>Best regards,<br/>The Fox Academy Team</p>
+      `,
+    });
+
+    console.log("Welcome email sent:", info.response);
+  } catch (error) {
+    console.error("Welcome email sending failed:", error);
+    throw new Error("Welcome email could not be sent");
+  }
+};
+
+module.exports = { sendVerificationEmail, sendWelcomeEmail };

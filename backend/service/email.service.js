@@ -1,9 +1,9 @@
 const emailQueue = require("../queue/emailqueue");
 
-exports.enqueueVerificationEmail = async (email, token, code) => {
+exports.enqueueVerificationEmail = async (email, token, code, role) => {
   await emailQueue.add(
     "sendVerificationEmail",
-    { email, token, code },
+    { email, token, code, role },
     {
       delay: 0,
       attempts: 5,
@@ -11,7 +11,7 @@ exports.enqueueVerificationEmail = async (email, token, code) => {
         type: "exponential",
         delay: 5000,
       },
-    }
+    },
   );
 };
 

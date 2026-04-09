@@ -43,7 +43,7 @@ exports.preRegister = async (req, res, next) => {
       verificationTokenExpiry: Date.now() + expiryHours * 60 * 60 * 1000,
     });
 
-    await enqueueVerificationEmail(email, token, invitationCode);
+    await enqueueVerificationEmail(email, token, invitationCode, role);
     await recordAudit({
       userId: user._id,
       action: "PRE_REGISTER",
@@ -57,7 +57,7 @@ exports.preRegister = async (req, res, next) => {
     return success(
       res,
       { token, invitationCode },
-      "Pre-registration successful. Check your email including Junk/Spam mail in 10 minutes. ",
+      `Pre-registration successful. Check your email including Junk/Spam mail for Invatation code. Link expires in ${expiryHours} hours.`,
     );
   } catch (err) {
     next(err);
@@ -90,7 +90,6 @@ exports.verifyInvitation = async (req, res, next) => {
     user.invitationCode = null;
     // Skip validation here, course will be set later
     await user.save({ validateBeforeSave: false });
-
     await recordAudit({
       userId: user._id,
       action: "VERIFY_INVITATION",
@@ -100,6 +99,8 @@ exports.verifyInvitation = async (req, res, next) => {
       resourceId: user._id,
       resourceType: "User",
     });
+
+    await enqueueWelcomeEmail(user.email);
 
     return success(res, null, "Invitation verified. Continue registration.");
   } catch (err) {
@@ -411,7 +412,7 @@ exports.completeMentorProfile = async (req, res, next) => {
       metadata: { roleTitle },
     });
 
-    return success(res, user, "Mentor profile completed successfully");
+    return success(res, user, "Instructor profile completed successfully");
   } catch (err) {
     next(err);
   }
