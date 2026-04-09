@@ -23,6 +23,7 @@ import UserPersonaAssignment from "./pages/UserPersonaAssignment";
 import Resources from "./pages/Resources";
 import Community from "./pages/Community";
 import CreateDiscussion from "./pages/CreateDiscussion";
+import DiscussionDetail from "./pages/DiscussionDetail";
 import TeamDirectory from "./pages/TeamDirectory";
 import WorkBoard from "./pages/WorkBoard";
 import ModuleDetail from "./pages/ModuleDetail";
@@ -63,6 +64,7 @@ function App() {
         <Route path="/resources" element={<Resources />} />
         <Route path="/community" element={<Community />} />
         <Route path="/community/create" element={<CreateDiscussion />} />
+        <Route path="/community/discussion/:id" element={<DiscussionDetail />} />
         <Route path="/team" element={<TeamDirectory />} />
         <Route path="/work-board" element={<WorkBoard />} />
       </Routes>

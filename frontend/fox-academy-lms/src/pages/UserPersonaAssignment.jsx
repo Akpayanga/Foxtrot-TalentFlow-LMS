@@ -11,16 +11,19 @@ import {
   X,
   Loader
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const UserPersonaAssignment = () => {
+  const navigate = useNavigate();
   const [file, setFile] = useState(null);
   const [link, setLink] = useState("");
   const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [submissionData, setSubmissionData] = useState(null);
   const fileInputRef = useRef(null);
   const dropZoneRef = useRef(null);
 
@@ -67,20 +70,34 @@ const UserPersonaAssignment = () => {
       if (link) formData.append('link', link);
       if (note) formData.append('note', note);
       formData.append('status', 'submitted');
-      formData.append('assignmentId', 'user-persona');
 
       const response = await axios.post(
-        'http://localhost:8000/api/submissions',
+        'http://localhost:8000/api/assignments/user-persona/submit',
         formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
+        { 
+          headers: { 'Content-Type': 'multipart/form-data' },
+          withCredentials: true 
+        }
       );
 
-      setMessage({ type: 'success', text: 'Assignment submitted successfully!' });
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+      const dateString = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+      
+      setSubmissionData({
+        fileName: file?.name || 'Document',
+        fileSize: file ? (file.size / (1024 * 1024)).toFixed(1) : '0',
+        time: timeString,
+        date: dateString,
+        mentor: 'Dr. Funke Adeyemi'
+      });
+      
       setFile(null);
       setLink("");
       setNote("");
-      setTimeout(() => setMessage(""), 3000);
+      setShowSuccessModal(true);
     } catch (error) {
+      console.error('Submission error:', error);
       setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to submit assignment' });
     } finally {
       setIsSubmitting(false);
@@ -100,17 +117,20 @@ const UserPersonaAssignment = () => {
       if (link) formData.append('link', link);
       if (note) formData.append('note', note);
       formData.append('status', 'draft');
-      formData.append('assignmentId', 'user-persona');
 
       await axios.post(
-        'http://localhost:8000/api/submissions',
+        'http://localhost:8000/api/assignments/user-persona/submit',
         formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
+        { 
+          headers: { 'Content-Type': 'multipart/form-data' },
+          withCredentials: true 
+        }
       );
 
       setMessage({ type: 'success', text: 'Draft saved successfully!' });
       setTimeout(() => setMessage(""), 3000);
     } catch (error) {
+      console.error('Draft save error:', error);
       setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to save draft' });
     } finally {
       setIsSaving(false);
@@ -349,6 +369,70 @@ const UserPersonaAssignment = () => {
           </div>
         </div>
       </main>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl">
+            {/* Success Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="h-16 w-16 rounded-full bg-[#F38821] flex items-center justify-center">
+                <CheckCircle size={40} className="text-white fill-white" />
+              </div>
+            </div>
+
+            {/* Heading */}
+            <h2 className="text-2xl font-bold text-[#111827] text-center mb-4">
+              Assignment Submitted!
+            </h2>
+
+            {/* Message */}
+            <p className="text-center text-gray-600 mb-6 text-sm leading-relaxed">
+              Your <span className="font-bold text-[#111827]">"User Persona Document"</span> has been successfully sent to <span className="font-bold text-[#F38821]">{submissionData?.mentor}</span> for review.
+            </p>
+
+            {/* File Info */}
+            <div className="bg-gray-50 rounded-xl p-4 mb-4 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-white flex items-center justify-center text-[#F38821]">
+                <FileText size={20} />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-[#111827]">{submissionData?.fileName}</p>
+                <p className="text-xs text-gray-500">{submissionData?.fileSize} MB</p>
+              </div>
+            </div>
+
+            {/* Submission Time */}
+            <div className="flex items-center gap-2 text-xs text-gray-500 mb-6 ml-1">
+              <span>📅 Submitted {submissionData?.date}, {submissionData?.time}</span>
+            </div>
+
+            {/* Next Steps Box */}
+            <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-8">
+              <p className="text-xs font-black tracking-widest text-[#F38821] uppercase mb-3">Next Steps</p>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Your mentor will review your work within 48 hours. You'll receive a notification once your grade and feedback are ready.
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="space-y-3">
+              <button
+                onClick={() => navigate('/assignments')}
+                className="w-full bg-[#F38821] hover:bg-[#E07A1D] text-white text-sm font-bold py-4 rounded-2xl transition-all shadow-lg shadow-orange-100 hover:-translate-y-0.5"
+              >
+                Back to Assignments
+              </button>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="w-full text-[#F38821] text-sm font-bold py-4 rounded-2xl transition-colors hover:bg-orange-50"
+              >
+                Go to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="w-full bg-white border-t border-gray-100 py-10 px-6 mt-20">
