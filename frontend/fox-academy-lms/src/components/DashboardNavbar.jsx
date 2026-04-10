@@ -14,6 +14,7 @@ export default function DashboardNavbar() {
     { name: "Progress", path: "/progress" },
     { name: "Resources", path: "/resources" },
     { name: "Community", path: "/community" },
+    { name: "Settings", path: "/settings" },
   ];
 
   return (

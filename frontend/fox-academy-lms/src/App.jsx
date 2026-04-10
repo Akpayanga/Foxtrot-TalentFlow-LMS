@@ -27,6 +27,9 @@ import DiscussionDetail from "./pages/DiscussionDetail";
 import TeamDirectory from "./pages/TeamDirectory";
 import WorkBoard from "./pages/WorkBoard";
 import ModuleDetail from "./pages/ModuleDetail";
+import Settings from "./pages/Settings";
+import AccountSecurity from "./pages/AccountSecurity";
+import Notifications from "./pages/Notifications";
 
 function App() {
   return (
@@ -67,6 +70,9 @@ function App() {
         <Route path="/community/discussion/:id" element={<DiscussionDetail />} />
         <Route path="/team" element={<TeamDirectory />} />
         <Route path="/work-board" element={<WorkBoard />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings/account-security" element={<AccountSecurity />} />
+        <Route path="/settings/notifications" element={<Notifications />} />
       </Routes>
     </Router>
   );
