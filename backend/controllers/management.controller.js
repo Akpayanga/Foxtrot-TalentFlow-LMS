@@ -4,15 +4,15 @@ const Submission = require("../models/submission.model");
 const { success } = require("../utilities/response");
 
 /**
- * Lists all mentors (instructors) with performance metrics for Admin
+ * Lists all instructors with performance metrics for Admin
  */
-exports.listMentors = async (req, res, next) => {
+exports.listInstructors = async (req, res, next) => {
   try {
-    const mentors = await User.find({ role: "instructor", deletedAt: null });
+    const instructors = await User.find({ role: "instructor", deletedAt: null });
     
-    const mentorsWithStats = await Promise.all(mentors.map(async (m) => {
+    const instructorsWithStats = await Promise.all(instructors.map(async (i) => {
       // Find assigned interns via submissions
-      const submissions = await Submission.find({ mentorId: m._id }).select("userId");
+      const submissions = await Submission.find({ instructorId: i._id }).select("userId");
       const uniqueStudentIds = [...new Set(submissions.map(s => s.userId.toString()))];
       
       // Calculate avg progress of assigned interns
@@ -22,10 +22,10 @@ exports.listMentors = async (req, res, next) => {
         : 0;
 
       return {
-        _id: m._id,
-        name: `${m.firstName} ${m.lastName}`,
-        discipline: m.course || "General",
-        title: m.role === "instructor" ? "Mentor" : m.role,
+        _id: i._id,
+        name: `${i.firstName} ${i.lastName}`,
+        discipline: i.course || "General",
+        title: "Instructor",
         assignedInterns: uniqueStudentIds.length,
         avgProgress: `${avgProgress}%`,
         lastActive: "Just now", // Placeholder
@@ -34,25 +34,25 @@ exports.listMentors = async (req, res, next) => {
       };
     }));
 
-    return success(res, mentorsWithStats, "Mentors list fetched successfully");
+    return success(res, instructorsWithStats, "Instructors list fetched successfully");
   } catch (err) {
     next(err);
   }
 };
 
 /**
- * Lists all interns (students) with progress and status for Admin/Mentor
+ * Lists all interns (students) with progress and status for Admin/Instructor
  */
 exports.listInterns = async (req, res, next) => {
   try {
-    const { mentorId, discipline } = req.query;
+    const { instructorId, discipline } = req.query;
     
     let query = { role: "student", deletedAt: null };
     if (discipline) query.course = discipline.toLowerCase();
 
-    // If filtered by mentor, first find students assigned to that mentor
-    if (mentorId) {
-      const submissions = await Submission.find({ mentorId }).select("userId");
+    // If filtered by instructor, first find students assigned to that instructor
+    if (instructorId) {
+      const submissions = await Submission.find({ instructorId }).select("userId");
       const assignedIds = [...new Set(submissions.map(s => s.userId.toString()))];
       query._id = { $in: assignedIds };
     }
@@ -75,7 +75,7 @@ exports.listInterns = async (req, res, next) => {
         name: `${s.firstName} ${s.lastName}`,
         studentId: s.studentId || "N/A",
         discipline: s.course || "General",
-        mentor: "Assigned Mentor", // Placeholder
+        instructor: "Assigned Instructor", // Placeholder
         progress: enrollment ? enrollment.progressPercentage : 0,
         lastActive: enrollment ? "Recent" : "Never",
         status: statusLabel,

@@ -5,6 +5,6 @@ const auth = require("../middleware/Auth.middle");
 
 router.get("/", auth, dashboardController.getDashboardData);
 router.get("/admin", auth, dashboardController.getAdminDashboardStats);
-router.get("/mentor", auth, dashboardController.getMentorDashboardStats);
+router.get("/instructor", auth, dashboardController.getInstructorDashboardStats);
 
 module.exports = router;

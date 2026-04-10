@@ -42,15 +42,15 @@ exports.getDashboardData = async (req, res, next) => {
     const recentFeedback = await Submission.find({ userId, status: "graded" })
       .sort({ gradedAt: -1 })
       .limit(2)
-      .populate("mentorId", "firstName lastName role");
+      .populate("instructorId", "firstName lastName role");
 
     const activeCourses = await Course.find({ phase: 1 }).limit(3);
     if (!activeCourses || activeCourses.length === 0) {
       return next(new ApiError(404, "No active courses found"));
     }
 
-    const mentor =
-      recentFeedback.length > 0 ? recentFeedback[0].mentorId : null;
+    const instructor =
+      recentFeedback.length > 0 ? recentFeedback[0].instructorId : null;
 
     // Audit log
     await recordAudit({
@@ -79,9 +79,9 @@ exports.getDashboardData = async (req, res, next) => {
         })),
         recentFeedback: recentFeedback.map((f) => ({
           content: f.feedback,
-          mentorName: f.mentorId
-            ? `${f.mentorId.firstName} ${f.mentorId.lastName}`
-            : "Mentor",
+          instructorName: f.instructorId
+            ? `${f.instructorId.firstName} ${f.instructorId.lastName}`
+            : "Instructor",
           gradedAt: f.gradedAt,
         })),
         activeCourses: activeCourses.map((c) => ({
@@ -91,10 +91,10 @@ exports.getDashboardData = async (req, res, next) => {
           progress: 10,
           week: c.week,
         })),
-        mentor: mentor
+        instructor: instructor
           ? {
-              name: `${mentor.firstName} ${mentor.lastName}`,
-              role: mentor.role || "Senior Mentor",
+              name: `${instructor.firstName} ${instructor.lastName}`,
+              role: instructor.role || "Senior Instructor",
               isAvailable: true,
             }
           : null,
@@ -112,7 +112,7 @@ exports.getDashboardData = async (req, res, next) => {
 exports.getAdminDashboardStats = async (req, res, next) => {
   try {
     const totalInterns = await User.countDocuments({ role: "student", deletedAt: null });
-    const totalMentors = await User.countDocuments({ role: "instructor", deletedAt: null });
+    const totalInstructors = await User.countDocuments({ role: "instructor", deletedAt: null });
     
     // Progress Snapshot logic
     const enrollments = await Enrollment.find().select("progressPercentage lastAccessed");
@@ -137,15 +137,20 @@ exports.getAdminDashboardStats = async (req, res, next) => {
       ? Math.round(enrollments.reduce((acc, curr) => acc + curr.progressPercentage, 0) / enrollments.length)
       : 0;
 
-    // Mentor overview (top 4)
-    const mentors = await User.find({ role: "instructor" }).limit(4).select("firstName lastName course isActive");
-    // For now, mock assigned count and last active since link is missing
-    const mentorOverview = mentors.map(m => ({
-      name: `${m.firstName} ${m.lastName}`,
-      discipline: m.course || "General",
-      assignedInterns: Math.floor(Math.random() * 100), // Placeholder logic as per Figma
-      lastActive: "2h ago",
-      status: m.isActive ? "ACTIVE" : "INACTIVE"
+    // Instructor overview (top 4)
+    const instructors = await User.find({ role: "instructor" }).limit(4).select("firstName lastName course isActive");
+    
+    const instructorOverview = await Promise.all(instructors.map(async (i) => {
+      const submissions = await Submission.find({ instructorId: i._id }).select("userId");
+      const uniqueStudentIds = [...new Set(submissions.map(s => s.userId.toString()))];
+      
+      return {
+        name: `${i.firstName} ${i.lastName}`,
+        discipline: i.course || "General",
+        assignedInterns: uniqueStudentIds.length,
+        lastActive: "Active now", 
+        status: i.isActive ? "ACTIVE" : "INACTIVE"
+      };
     }));
 
     // Activity feed (last 4 audit logs)
@@ -162,12 +167,12 @@ exports.getAdminDashboardStats = async (req, res, next) => {
     return success(res, {
       stats: {
         totalInterns,
-        totalMentors,
-        cohortStatus: "Cohort 3", // Mocked
+        totalInstructors,
+        cohortStatus: "Cohort 1", 
         completionRate: avgCompletion
       },
       snapshot: { onTrack, atRisk, inactive },
-      mentorOverview,
+      instructorOverview,
       activityFeed: formattedFeed
     }, "Admin dashboard stats fetched");
   } catch (err) {
@@ -176,14 +181,14 @@ exports.getAdminDashboardStats = async (req, res, next) => {
 };
 
 /**
- * Aggregates data for the specific Mentor Dashboard
+ * Aggregates data for the specific Instructor Dashboard
  */
-exports.getMentorDashboardStats = async (req, res, next) => {
+exports.getInstructorDashboardStats = async (req, res, next) => {
   try {
-    const mentorId = req.user._id;
+    const instructorId = req.user._id;
 
     // Find students assigned via submissions
-    const submissions = await Submission.find({ mentorId }).select("userId");
+    const submissions = await Submission.find({ instructorId }).select("userId");
     const uniqueStudentIds = [...new Set(submissions.map(s => s.userId.toString()))];
     
     const assignedInternCount = uniqueStudentIds.length;
@@ -194,18 +199,22 @@ exports.getMentorDashboardStats = async (req, res, next) => {
       ? Math.round(enrollments.reduce((acc, curr) => acc + curr.progressPercentage, 0) / enrollments.length)
       : 0;
 
+    const students = await User.find({ _id: { $in: uniqueStudentIds } });
+    const instructionSummary = {
+      backend: students.filter(s => s.course === "backend").length,
+      frontend: students.filter(s => s.course === "frontend").length,
+      cybersecurity: students.filter(s => s.course === "cybersecurity").length,
+      productdesign: students.filter(s => s.course === "product design").length
+    };
+
     return success(res, {
       stats: {
         assignedInterns: assignedInternCount,
         avgProgress,
-        totalCapacity: 60, // Mocked
-        mentorshipSummary: {
-          design: 14,
-          engineering: 22,
-          dataAnalysis: 8
-        }
+        totalCapacity: 50, 
+        instructionSummary
       }
-    }, "Mentor dashboard stats fetched");
+    }, "Instructor dashboard stats fetched");
   } catch (err) {
     next(err);
   }

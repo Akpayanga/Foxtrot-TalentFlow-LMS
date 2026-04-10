@@ -41,8 +41,8 @@ exports.completeStudentProfileSchema = Joi.object({
     .required()
 });
 
-// Mentor profile completion
-exports.completeMentorProfileSchema = Joi.object({
+// Instructor profile completion
+exports.completeInstructorProfileSchema = Joi.object({
   bio: Joi.string().min(10).required(),
   roleTitle: Joi.string().required(),
   linkedIn: Joi.string().uri().optional(),

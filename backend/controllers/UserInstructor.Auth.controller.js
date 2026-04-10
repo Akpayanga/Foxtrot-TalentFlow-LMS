@@ -378,8 +378,8 @@ exports.completeStudentProfile = async (req, res, next) => {
   }
 };
 
-// MENTOR PROFILE COMPLETION
-exports.completeMentorProfile = async (req, res, next) => {
+// INSTRUCTOR PROFILE COMPLETION
+exports.completeInstructorProfile = async (req, res, next) => {
   try {
     const { bio, linkedIn, phoneNumber, roleTitle } = req.body;
     const user = await User.findById(req.user.id);
@@ -403,8 +403,8 @@ exports.completeMentorProfile = async (req, res, next) => {
 
     await recordAudit({
       userId: user._id,
-      action: "COMPLETE_MENTOR_PROFILE",
-      details: "Mentor profile completed",
+      action: "COMPLETE_INSTRUCTOR_PROFILE",
+      details: "Instructor profile completed",
       req,
       status: "success",
       resourceId: user._id,

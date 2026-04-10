@@ -101,7 +101,7 @@ exports.getAssignmentById = async (req, res, next) => {
 exports.submitAssignment = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { fileUrl, linkUrl, mentorNote } = req.body;
+    const { fileUrl, linkUrl, studentNote } = req.body;
     const userId = req.user._id;
 
     let submission = await Submission.findOne({ userId, assignmentId: id });
@@ -110,7 +110,7 @@ exports.submitAssignment = async (req, res, next) => {
       // Update existing draft/submission
       submission.fileUrl = fileUrl || submission.fileUrl;
       submission.linkUrl = linkUrl || submission.linkUrl;
-      submission.mentorNote = mentorNote || submission.mentorNote;
+      submission.studentNote = studentNote || submission.studentNote;
       submission.status = "submitted";
       submission.submittedAt = Date.now();
       await submission.save();
@@ -121,7 +121,7 @@ exports.submitAssignment = async (req, res, next) => {
         assignmentId: id,
         fileUrl,
         linkUrl,
-        mentorNote,
+        studentNote,
         status: "submitted",
         submittedAt: Date.now(),
       });

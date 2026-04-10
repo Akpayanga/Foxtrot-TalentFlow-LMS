@@ -712,10 +712,10 @@
           ]
         },
         {
-          "name": "/api/v1/auth/complete-mentor-profile",
+          "name": "/api/v1/auth/complete-instructor-profile",
           "request": {
             "method": "POST",
-            "url": "{{baseUrl}}/api/v1/auth/complete-mentor-profile",
+            "url": "{{baseUrl}}/api/v1/auth/complete-instructor-profile",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"bio\": \"I am a senior developer...\",\n  \"roleTitle\": \"Senior Engineer\",\n  \"linkedIn\": \"https://linkedin.com/in/dummy\",\n  \"phoneNumber\": \"+1234567890\"\n}",
@@ -748,7 +748,7 @@
               "name": "Successful Request",
               "originalRequest": {
                 "method": "POST",
-                "url": "{{baseUrl}}/api/v1/auth/complete-mentor-profile"
+                "url": "{{baseUrl}}/api/v1/auth/complete-instructor-profile"
               },
               "status": "OK",
               "code": 200,
@@ -766,7 +766,7 @@
               "name": "Error Response",
               "originalRequest": {
                 "method": "POST",
-                "url": "{{baseUrl}}/api/v1/auth/complete-mentor-profile"
+                "url": "{{baseUrl}}/api/v1/auth/complete-instructor-profile"
               },
               "status": "Bad Request",
               "code": 400,

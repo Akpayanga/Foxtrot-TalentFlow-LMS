@@ -6,15 +6,15 @@ const submissionSchema = new mongoose.Schema(
     assignmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Assignment", required: true },
     fileUrl: { type: String }, // For file uploads
     linkUrl: { type: String }, // For external links (e.g. Figma, Drive)
-    mentorNote: { type: String, trim: true }, // Student's note to mentor
+    studentNote: { type: String, trim: true }, // Student's note to instructor
     status: { 
       type: String, 
       enum: ["pending", "submitted", "in-progress", "graded"], 
       default: "in-progress" 
     },
     grade: { type: Number, min: 0, max: 100 },
-    feedback: { type: String, trim: true }, // Mentor's feedback
-    mentorId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Instructor who graded
+    feedback: { type: String, trim: true }, // Instructor's feedback
+    instructorId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Instructor who graded
     submittedAt: { type: Date },
     gradedAt: { type: Date }
   },
