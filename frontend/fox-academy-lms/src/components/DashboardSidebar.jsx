@@ -1,4 +1,4 @@
-import { Video, ChevronRight, MessageSquare, Calendar, Star } from "lucide-react";
+import { Video, ChevronRight } from "lucide-react";
 import mentor from "../assets/images/mentor.png";
 
 function AssignmentsCard() {

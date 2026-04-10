@@ -4,6 +4,65 @@ import { Link } from "react-router-dom";
 import DashboardNavbar from "../components/DashboardNavbar";
 import amara from "../assets/images/amara.jpg";
 
+// Toggle Switch Component - extracted outside to avoid re-creation on render
+const ToggleSwitch = ({ checked, onChange }) => (
+  <button
+    onClick={onChange}
+    style={{
+      width: "32px",
+      height: "16px",
+      background: checked ? "#459F49" : "#E2E2E2",
+      borderRadius: "9999px",
+      border: "none",
+      position: "relative",
+      cursor: "pointer",
+      padding: 0,
+    }}
+  >
+    <div
+      style={{
+        position: "absolute",
+        width: "12px",
+        height: "12px",
+        background: checked ? "#FFFFFF" : "#C6C6C6",
+        borderRadius: "9999px",
+        right: checked ? "2px" : "2px",
+        top: "2px",
+        transition: "right 0.2s ease",
+      }}
+    />
+  </button>
+);
+
+// Master Toggle Switch Component - extracted outside to avoid re-creation on render
+const MasterToggleSwitch = ({ checked, onChange }) => (
+  <button
+    onClick={onChange}
+    style={{
+      width: "48px",
+      height: "24px",
+      background: checked ? "#459F49" : "#E2E2E2",
+      borderRadius: "9999px",
+      border: "none",
+      position: "relative",
+      cursor: "pointer",
+      padding: 0,
+    }}
+  >
+    <div
+      style={{
+        position: "absolute",
+        width: "16px",
+        height: "16px",
+        background: "#FFFFFF",
+        borderRadius: "9999px",
+        right: checked ? "4px" : "4px",
+        top: "4px",
+      }}
+    />
+  </button>
+);
+
 export default function Notifications() {
   const [notifications, setNotifications] = useState({
     allNotifications: true,
@@ -54,63 +113,6 @@ export default function Notifications() {
       platformAnnouncements: newState,
     });
   };
-
-  const ToggleSwitch = ({ checked, onChange }) => (
-    <button
-      onClick={onChange}
-      style={{
-        width: "32px",
-        height: "16px",
-        background: checked ? "#459F49" : "#E2E2E2",
-        borderRadius: "9999px",
-        border: "none",
-        position: "relative",
-        cursor: "pointer",
-        padding: 0,
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          width: "12px",
-          height: "12px",
-          background: checked ? "#FFFFFF" : "#C6C6C6",
-          borderRadius: "9999px",
-          right: checked ? "2px" : "2px",
-          top: "2px",
-          transition: "right 0.2s ease",
-        }}
-      />
-    </button>
-  );
-
-  const MasterToggleSwitch = ({ checked, onChange }) => (
-    <button
-      onClick={onChange}
-      style={{
-        width: "48px",
-        height: "24px",
-        background: checked ? "#459F49" : "#E2E2E2",
-        borderRadius: "9999px",
-        border: "none",
-        position: "relative",
-        cursor: "pointer",
-        padding: 0,
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          width: "16px",
-          height: "16px",
-          background: "#FFFFFF",
-          borderRadius: "9999px",
-          right: checked ? "4px" : "4px",
-          top: "4px",
-        }}
-      />
-    </button>
-  );
 
   const activeCount = Object.values(notifications).filter(Boolean).length;
   const totalCount = Object.keys(notifications).length;

@@ -1,8 +1,24 @@
 import React, { useState } from "react";
-import { Bell, ChevronRight, Copy, LogOut } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardNavbar from "../components/DashboardNavbar";
 import amara from "../assets/images/amara.jpg";
+
+// Toggle Switch Component - extracted to avoid recreation on render
+const ToggleSwitch = ({ checked, onChange }) => (
+  <button
+    onClick={onChange}
+    className={`relative h-6 w-11 rounded-full transition-colors ${
+      checked ? "bg-[#4CAF50]" : "bg-[#D1D5DB]"
+    }`}
+  >
+    <div
+      className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${
+        checked ? "translate-x-5" : "translate-x-1"
+      }`}
+    />
+  </button>
+);
 
 export default function Settings() {
   const [notifications, setNotifications] = useState({
@@ -34,21 +50,6 @@ export default function Settings() {
       [key]: !prev[key],
     }));
   };
-
-  const ToggleSwitch = ({ checked, onChange }) => (
-    <button
-      onClick={onChange}
-      className={`relative h-6 w-11 rounded-full transition-colors ${
-        checked ? "bg-[#4CAF50]" : "bg-[#D1D5DB]"
-      }`}
-    >
-      <div
-        className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${
-          checked ? "translate-x-5" : "translate-x-1"
-        }`}
-      />
-    </button>
-  );
 
   return (
     <div className="min-h-screen bg-[#FDFDFD]">

@@ -1,144 +1,19 @@
-import React, { useState, useRef } from "react";
+import React from "react";
+import { useNavigate, Link } from "react-router-dom";
 import DashboardNavbar from "../components/DashboardNavbar";
 import { 
+  CheckCircle, 
   ChevronRight, 
   Download, 
-  CheckCircle, 
   CloudUpload, 
   HelpCircle,
   FileText,
   BookOpen,
-  X,
-  Loader
+  Clock
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 
-const UserPersonaAssignment = () => {
+const SubmittedAssignments = () => {
   const navigate = useNavigate();
-  const [file, setFile] = useState(null);
-  const [link, setLink] = useState("");
-  const [note, setNote] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState("");
-  const [submissionData, setSubmissionData] = useState(null);
-  const fileInputRef = useRef(null);
-  const dropZoneRef = useRef(null);
-
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-    }
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dropZoneRef.current?.classList.add('border-[#F38821]');
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dropZoneRef.current?.classList.remove('border-[#F38821]');
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dropZoneRef.current?.classList.remove('border-[#F38821]');
-    
-    const droppedFile = e.dataTransfer.files?.[0];
-    if (droppedFile) {
-      setFile(droppedFile);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!file && !link) {
-      setMessage({ type: 'error', text: 'Please upload a file or provide a link' });
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const formData = new FormData();
-      if (file) formData.append('file', file);
-      if (link) formData.append('link', link);
-      if (note) formData.append('note', note);
-      formData.append('status', 'submitted');
-
-      await axios.post(
-        'http://localhost:8000/api/assignments/user-persona/submit',
-        formData,
-        { 
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true 
-        }
-      );
-
-      const now = new Date();
-      const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-      const dateString = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-      
-      setSubmissionData({
-        fileName: file?.name || 'Document',
-        fileSize: file ? (file.size / (1024 * 1024)).toFixed(1) : '0',
-        time: timeString,
-        date: dateString,
-        mentor: 'Dr. Funke Adeyemi'
-      });
-      
-      setFile(null);
-      setLink("");
-      setNote("");
-      
-      // Navigate to success page after a short delay to ensure state is updated
-      setTimeout(() => {
-        navigate('/assignments/submitted');
-      }, 500);
-    } catch (error) {
-      console.error('Submission error:', error);
-      setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to submit assignment' });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleSaveDraft = async () => {
-    if (!file && !link && !note) {
-      setMessage({ type: 'error', text: 'Nothing to save' });
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      const formData = new FormData();
-      if (file) formData.append('file', file);
-      if (link) formData.append('link', link);
-      if (note) formData.append('note', note);
-      formData.append('status', 'draft');
-
-      await axios.post(
-        'http://localhost:8000/api/assignments/user-persona/submit',
-        formData,
-        { 
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true 
-        }
-      );
-
-      setMessage({ type: 'success', text: 'Draft saved successfully!' });
-      setTimeout(() => setMessage(""), 3000);
-    } catch (error) {
-      console.error('Draft save error:', error);
-      setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to save draft' });
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] flex flex-col">
@@ -261,44 +136,13 @@ const UserPersonaAssignment = () => {
               </div>
 
               {/* Upload Area */}
-              <input 
-                ref={fileInputRef}
-                type="file"
-                onChange={handleFileChange}
-                className="hidden"
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip"
-              />
-              
-              {!file ? (
-                <div 
-                  ref={dropZoneRef}
-                  onClick={() => fileInputRef.current?.click()}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  className="border-2 border-dashed border-[#FFF7ED] rounded-2xl p-10 flex flex-col items-center justify-center text-center group hover:border-[#F38821] transition-colors cursor-pointer mb-8"
-                >
-                  <div className="h-16 w-16 rounded-full bg-orange-50 flex items-center justify-center text-[#F38821] mb-4 group-hover:scale-110 transition-transform">
-                    <CloudUpload size={32} />
-                  </div>
-                  <h3 className="text-lg font-bold text-[#111827] mb-1">Drop your file here</h3>
-                  <p className="text-xs text-gray-400 font-medium">or click to browse</p>
+              <div className="border-2 border-dashed border-[#FFF7ED] rounded-2xl p-10 flex flex-col items-center justify-center text-center mb-8">
+                <div className="h-16 w-16 rounded-full bg-orange-50 flex items-center justify-center text-[#F38821] mb-4">
+                  <CloudUpload size={32} />
                 </div>
-              ) : (
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-10 flex flex-col items-center justify-center text-center mb-8">
-                  <div className="h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mb-4">
-                    <CheckCircle size={32} fill="currentColor" />
-                  </div>
-                  <h3 className="text-lg font-bold text-[#111827] mb-1">File uploaded</h3>
-                  <p className="text-sm text-gray-600 font-medium mb-4">{file.name}</p>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setFile(null); }}
-                    className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1 transition-colors"
-                  >
-                    <X size={14} /> Remove file
-                  </button>
-                </div>
-              )}
+                <h3 className="text-lg font-bold text-[#111827] mb-1">Drop your file here</h3>
+                <p className="text-xs text-gray-400 font-medium">or click to browse</p>
+              </div>
 
               {/* Paste Link */}
               <div className="space-y-2 mb-8">
@@ -307,10 +151,9 @@ const UserPersonaAssignment = () => {
                 </label>
                 <input 
                   type="text" 
-                  value={link}
-                  onChange={(e) => setLink(e.target.value)}
                   placeholder="https://figma.com/..."
-                  className="w-full bg-gray-50 border-none rounded-xl px-5 py-4 text-sm font-medium focus:ring-2 focus:ring-[#F38821]/20 outline-none placeholder:text-gray-300"
+                  readOnly
+                  className="w-full bg-gray-50 border-none rounded-xl px-5 py-4 text-sm font-medium outline-none placeholder:text-gray-300"
                 />
               </div>
 
@@ -320,42 +163,24 @@ const UserPersonaAssignment = () => {
                   ADD A NOTE FOR YOUR MENTOR
                 </label>
                 <textarea 
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
                   placeholder="Any specific areas you'd like feedback on?"
                   rows={4}
-                  className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-medium focus:ring-2 focus:ring-[#F38821]/20 outline-none placeholder:text-gray-300 resize-none"
+                  readOnly
+                  className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-medium outline-none placeholder:text-gray-300 resize-none"
                 />
               </div>
-
-              {/* Message Display */}
-              {message && (
-                <div className={`p-4 rounded-xl mb-6 flex items-center gap-3 ${
-                  message.type === 'success' 
-                    ? 'bg-green-50 border border-green-200 text-green-700' 
-                    : 'bg-red-50 border border-red-200 text-red-700'
-                }`}>
-                  <span className="text-sm font-semibold">{message.text}</span>
-                </div>
-              )}
 
               {/* Actions */}
               <div className="space-y-4 text-center">
                 <button 
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className="w-full bg-[#F38821] hover:bg-[#E07A1D] disabled:bg-gray-300 text-white text-sm font-black py-5 rounded-2xl transition-all shadow-lg shadow-orange-100 hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+                  className="w-full bg-[#F38821] text-white text-sm font-black py-5 rounded-2xl shadow-lg shadow-orange-100"
                 >
-                  {isSubmitting && <Loader size={16} className="animate-spin" />}
-                  {isSubmitting ? 'Submitting...' : 'Submit Assignment'}
+                  Submit Assignment
                 </button>
                 <button 
-                  onClick={handleSaveDraft}
-                  disabled={isSaving}
-                  className="text-[10px] font-black tracking-widest text-gray-400 hover:text-[#F38821] uppercase transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 disabled:text-gray-300"
+                  className="text-[10px] font-black tracking-widest text-gray-400 uppercase"
                 >
-                  {isSaving && <Loader size={12} className="animate-spin" />}
-                  {isSaving ? 'Saving...' : 'Save Draft'}
+                  Save Draft
                 </button>
               </div>
             </div>
@@ -366,7 +191,7 @@ const UserPersonaAssignment = () => {
                  <HelpCircle size={20} />
                </div>
                <p className="text-xs font-medium text-gray-500 leading-relaxed">
-                 Stuck? <Link to="/faq" className="text-[#F38821] font-bold underline underline-offset-2">Check the FAQ</Link> or message your mentor.
+                 Stuck? <span className="text-[#F38821] font-bold underline underline-offset-2">Check the FAQ</span> or message your mentor.
                </p>
             </div>
           </div>
@@ -386,9 +211,78 @@ const UserPersonaAssignment = () => {
           ))}
         </div>
       </footer>
+
+      {/* ===== SUCCESS MODAL OVERLAY ===== */}
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-2xl max-w-md w-full p-10 shadow-2xl">
+          {/* Success Icon */}
+          <div className="flex justify-center mb-6">
+            <div className="h-20 w-20 rounded-full bg-[#F38821] flex items-center justify-center">
+              <CheckCircle size={44} className="text-white" strokeWidth={2.5} />
+            </div>
+          </div>
+
+          {/* Heading */}
+          <h2 className="text-2xl font-extrabold text-[#111827] text-center mb-4 tracking-tight">
+            Assignment Submitted!
+          </h2>
+
+          {/* Submission Details */}
+          <p className="text-center text-gray-500 text-sm mb-8 leading-relaxed">
+            Your <span className="font-bold text-[#F38821]">"User Persona Document"</span> has been 
+            successfully sent to <span className="font-bold text-[#111827]">Dr. Funke Adeyemi</span> for review.
+          </p>
+
+          {/* File Info Card */}
+          <div className="bg-gray-50 rounded-xl p-4 mb-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-white border border-gray-100 flex items-center justify-center text-[#F38821]">
+                <FileText size={20} />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-[#111827]">Amara_Okafor_User_Personas.pdf</p>
+                <p className="text-xs text-gray-400">1.2 MB</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Submission Time */}
+          <div className="flex items-center gap-2 text-xs text-gray-400 mb-8 px-1">
+            <Clock size={14} />
+            <span>Submitted Today, 11:42 AM</span>
+          </div>
+
+          {/* Next Steps Section */}
+          <div className="mb-8">
+            <p className="text-xs font-black tracking-widest text-[#F38821] uppercase mb-3">Next Steps</p>
+            <div className="border-l-4 border-[#F38821] rounded-r-lg bg-white pl-4 py-3 pr-3">
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Your mentor will review your work within 48 hours. You'll receive a notification once your grade and feedback are ready.
+              </p>
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <button
+            onClick={() => navigate('/assignments')}
+            className="w-full bg-[#F38821] hover:bg-[#E07A1D] text-white font-bold py-4 rounded-xl mb-3 transition-colors text-sm tracking-wide"
+          >
+            Back to Assignments
+          </button>
+
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="w-full text-center text-[#111827] font-bold text-sm py-4 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
+          >
+            Go to Dashboard
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
+
+/* ===== Sub-components (same as UserPersonaAssignment) ===== */
 
 const ResourceCard = ({ title, info }) => (
   <div className="bg-white rounded-2xl p-5 border border-gray-100 flex items-center justify-between group hover:shadow-md transition-all cursor-pointer">
@@ -419,4 +313,4 @@ const GradingStep = ({ number, title, description }) => (
   </div>
 );
 
-export default UserPersonaAssignment;
+export default SubmittedAssignments;

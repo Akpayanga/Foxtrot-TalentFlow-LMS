@@ -5,25 +5,21 @@ import {
   ChevronDown, 
   Hash, 
   MessageSquare, 
-  Users, 
-  Pin, 
   MoreHorizontal, 
-  Eye, 
-  FileText, 
-  ExternalLink,
+  Eye,
   ChevronLeft,
-  ChevronRight,
-  Info,
   Bold,
   Italic,
   Paperclip,
-  Send
+  FileText,
+  ExternalLink,
+  Info
 } from "lucide-react";
 
 import amara from "../assets/images/amara.jpg";
 
 const DiscussionDetail = () => {
-  const { id } = useParams();
+  useParams();
   const [activeChannel, setActiveChannel] = useState("UX-DESIGN");
   const [activeSubChannel, setActiveSubChannel] = useState("GENERAL");
   const [replyText, setReplyText] = useState("");

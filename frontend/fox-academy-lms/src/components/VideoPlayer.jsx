@@ -1,4 +1,4 @@
-import { Play, Maximize, Volume2, Pause } from "lucide-react";
+import { Play, Maximize, Volume2 } from "lucide-react";
 import auth4 from "../assets/images/auth4.png";
 
 export default function VideoPlayer({ currentTime = "0:12", totalTime = "39:27" }) {

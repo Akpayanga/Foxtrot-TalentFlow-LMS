@@ -4,11 +4,8 @@ import {
   Search, 
   Download, 
   Play, 
-  ExternalLink, 
-  FileText, 
-  Video, 
+  ExternalLink,
   Link as LinkIcon,
-  ChevronRight,
   Eye
 } from "lucide-react";
 

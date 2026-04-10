@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { ChevronRight, Play, FileText, Download, Maximize, CheckCircle2 } from 'lucide-react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import AppNavbar from '../components/AppNavbar';

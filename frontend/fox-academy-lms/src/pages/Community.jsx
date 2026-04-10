@@ -5,13 +5,11 @@ import {
   ChevronDown, 
   Hash, 
   MessageSquare, 
-  Users, 
   Pin, 
   MoreHorizontal, 
   Eye, 
   FileText, 
   ExternalLink,
-  ChevronRight,
   Info
 } from "lucide-react";
 

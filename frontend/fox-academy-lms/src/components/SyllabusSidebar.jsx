@@ -1,4 +1,4 @@
-import { Check, Lock, ChevronRight, HelpCircle } from "lucide-react";
+import { Check, Lock } from "lucide-react";
 import auth2 from "../assets/images/auth2.png";
 import { Link } from "react-router-dom";
 

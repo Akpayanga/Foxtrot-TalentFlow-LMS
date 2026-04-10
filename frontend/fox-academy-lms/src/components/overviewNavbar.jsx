@@ -1,4 +1,3 @@
-import { useState } from "react";
 import member1 from "../assets/images/member-a.png";
 import member2 from "../assets/images/member-b.png";
 import member3 from "../assets/images/member-c.png";
@@ -42,7 +41,7 @@ const deliverables = [
 const avatarColors = [member1, member2, member3, member4];
 
 function OverviewNavbar() {
-  const [hovered, setHovered] = useState(false);
+
 
   return (
     <div className="max-w-[1440px] mx-auto font-sans p-4 md:p-8">

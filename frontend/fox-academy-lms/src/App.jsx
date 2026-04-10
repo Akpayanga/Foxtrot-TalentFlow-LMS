@@ -19,6 +19,7 @@ import MyProgressNew from './pages/progressPhase2';
 import Dashboard from "./pages/Dashboard";
 import MyLearning from "./pages/MyLearning";
 import Assignments from "./pages/Assignments";
+import SubmittedAssignments from "./pages/SubmittedAssignments";
 import UserPersonaAssignment from "./pages/UserPersonaAssignment";
 import Resources from "./pages/Resources";
 import Community from "./pages/Community";
@@ -26,6 +27,8 @@ import TeamDirectory from "./pages/TeamDirectory";
 import WorkBoard from "./pages/WorkBoard";
 import ModuleDetail from "./pages/ModuleDetail";
 import Phase2overview from "./pages/phase2overview";
+import CreateDiscussion from "./pages/CreateDiscussion";
+import DiscussionDetail from "./pages/DiscussionDetail";
 
 function App() {
   return (
@@ -60,10 +63,13 @@ function App() {
         <Route path="/learning" element={<MyLearning />} />
         <Route path="/learning/module" element={<ModuleDetail />} />
         <Route path="/assignments" element={<Assignments />} />
+        <Route path="/assignments/submitted" element={<SubmittedAssignments />} />
         <Route path="/assignments/user-persona" element={<UserPersonaAssignment />} />
         {/* <Route path="/progress" element={<Progress />} /> */}
         <Route path="/resources" element={<Resources />} />
         <Route path="/community" element={<Community />} />
+        <Route path="/community/create" element={<CreateDiscussion />} />
+        <Route path="/community/discussion/:id" element={<DiscussionDetail />} />
         <Route path="/team" element={<TeamDirectory />} />
         <Route path="/work-board" element={<WorkBoard />} />
       </Routes>

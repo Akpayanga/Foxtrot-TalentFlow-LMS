@@ -1,6 +1,6 @@
 import DashboardNavbar from "../components/DashboardNavbar";
 import ModuleCard from "../components/ModuleCard";
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 export default function MyLearning() {
   const cohortProgress = 18;

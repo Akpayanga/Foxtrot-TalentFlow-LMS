@@ -56,16 +56,27 @@ const Assignments = () => {
 
         {/* Tabs */}
         <div className="flex items-center gap-8 mb-12 border-b border-gray-100">
-          {['ALL', 'PENDING', 'SUBMITTED', 'GRADED'].map((tab, idx) => (
-            <button 
-              key={tab} 
-              className={`pb-4 text-xs font-bold tracking-widest ${
-                idx === 0 ? 'text-[#F38821] border-b-2 border-[#F38821]' : 'text-gray-400'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+          <button 
+            className="pb-4 text-xs font-bold tracking-widest text-[#F38821] border-b-2 border-[#F38821]"
+          >
+            ALL
+          </button>
+          <button 
+            className="pb-4 text-xs font-bold tracking-widest text-gray-400 hover:text-[#F38821] transition-colors cursor-pointer"
+          >
+            PENDING
+          </button>
+          <button 
+            onClick={() => navigate('/assignments/submitted')}
+            className="pb-4 text-xs font-bold tracking-widest text-gray-400 hover:text-[#F38821] transition-colors cursor-pointer"
+          >
+            SUBMITTED
+          </button>
+          <button 
+            className="pb-4 text-xs font-bold tracking-widest text-gray-400 hover:text-[#F38821] transition-colors cursor-pointer"
+          >
+            GRADED
+          </button>
         </div>
 
         {/* Sections */}

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import DashboardNavbar from "../components/DashboardNavbar";
 import { 
   ChevronDown, 
@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 const CreateDiscussion = () => {
-  const navigate = useNavigate();
+
   const [activeChannel, setActiveChannel] = useState("UX-DESIGN");
   const [activeSubChannel, setActiveSubChannel] = useState("GENERAL");
   const [selectedTag, setSelectedTag] = useState("Wireframing");
