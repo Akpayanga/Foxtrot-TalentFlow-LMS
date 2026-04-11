@@ -7,21 +7,21 @@ import socialBImg from "../assets/images/social-b.png";
 
 export default function KanbanBoard() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {/* Column 1: TO DO */}
       <div className="space-y-4">
         <ColumnHeader title="TO DO" count="1" />
         <TaskCard
           discipline="UX Design"
-          title="Conduct Stakeholder Interviews for FinEase"
+          title="Conduct Stakeholder Interviews For FinEase"
           date="OCT 24"
-          img={uxToDoImg} // Changed from imgId
+          img={uxToDoImg}
         />
       </div>
 
-      {/* Column 2: IN PROGRESS (Backend) */}
+      {/* Column 2: IN PROGRESS */}
       <div className="space-y-4">
-        <ColumnHeader title="IN PROGRESS" count="4" />
+        <ColumnHeader title="IN PROGRESS" count="2" />
         <TaskCard
           discipline="Backend"
           title="Wireframe User Dashboard Flow"
@@ -38,25 +38,37 @@ export default function KanbanBoard() {
         />
       </div>
 
-      {/* Column 3: IN PROGRESS (Social Media) */}
+      {/* Column 3: IN REVIEW */}
       <div className="space-y-4">
-        <ColumnHeader title="IN PROGRESS" count="1" />
+        <ColumnHeader title="IN REVIEW" count="1" />
         <TaskCard
           discipline="Social Media"
           title="Content Strategy for launch phase"
           date="OCT 20"
           img={socialAImg}
-          doubleAvatar={true}
+          doubleAvatar={socialBImg}
         />
       </div>
 
-      {/* Column 4: IN PROGRESS (Graphics - Done) */}
+      {/* Column 4: DONE */}
       <div className="space-y-4">
-        <ColumnHeader title="IN PROGRESS" count="1" />
+        <ColumnHeader title="DONE" count="3" />
         <TaskCard
           discipline="Graphics"
           title="Brand-colour identity and logo-design for FinEase"
           date="OCT 15"
+          isDone={true}
+        />
+        <TaskCard
+          discipline="Frontend"
+          title="Development of responsive components for FinEase web app"
+          date="OCT 21"
+          isDone={true}
+        />
+        <TaskCard
+          discipline="Social Media"
+          title="Content strategy and monthly calendar for FinEase engagement"
+          date="NOV 05"
           isDone={true}
         />
       </div>
@@ -72,7 +84,7 @@ function ColumnHeader({ title, count }) {
       <h3 className="text-xs font-bold text-gray-900 uppercase tracking-[0.15em]">
         {title}
       </h3>
-      <span className="w-5 h-5 rounded-full bg-[#F38821] text-white flex items-center justify-center text-[10px] font-bold">
+      <span className="w-6 h-6 rounded-full bg-[#F38821] text-white flex items-center justify-center text-[10px] font-bold">
         {count}
       </span>
     </div>
@@ -83,7 +95,7 @@ function TaskCard({
   discipline,
   title,
   date,
-  img, // Changed from imgId to match the new prop
+  img,
   doubleAvatar,
   isDone,
   barColor,
@@ -94,41 +106,47 @@ function TaskCard({
         {discipline}
       </p>
 
-      <h4 className="text-sm font-bold text-gray-900 leading-snug mb-3">
+      <h4 className="text-sm font-bold text-gray-900 leading-snug mb-3 flex-grow">
         {title}
       </h4>
 
       {barColor ? (
-        <div className={`w-12 h-1 ${barColor} rounded-full mb-6`}></div>
+        <div className={`w-12 h-1 ${barColor} rounded-full mb-auto`}></div>
       ) : (
-        <div className="mb-7"></div>
+        <div className="mb-auto"></div>
       )}
 
-      <div className="flex items-center justify-between mt-auto">
+      <div className="flex items-center justify-between mt-4">
         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
           {date}
         </span>
 
-        {isDone ? (
-          <div className="w-5 h-5 rounded-full border-2 border-green-500 flex items-center justify-center">
-            <span className="text-green-500 text-[10px] font-bold">✓</span>
-          </div>
-        ) : (
-          <div className="flex -space-x-2">
-            {doubleAvatar && (
+        <div className="flex items-center">
+          {isDone ? (
+            <div className="w-5 h-5 rounded-full border-2 border-green-500 flex items-center justify-center bg-green-50">
+              <span className="text-green-500 text-[10px] font-bold">✓</span>
+            </div>
+          ) : doubleAvatar ? (
+            <div className="flex -space-x-2">
               <img
-                src={socialBImg} // I used socialB here as a placeholder for the second avatar
-                className="w-6 h-6 rounded-full border-2 border-white object-cover"
+                src={doubleAvatar}
+                className="w-6 h-6 rounded-full border-2 border-white object-cover bg-gray-100"
                 alt="User"
               />
-            )}
+              <img
+                src={img}
+                className="w-6 h-6 rounded-full border-2 border-white object-cover bg-gray-100"
+                alt="User"
+              />
+            </div>
+          ) : (
             <img
-              src={img} // Now uses the actual imported image variable
-              className="w-6 h-6 rounded-full border-2 border-white bg-gray-100 object-cover"
+              src={img}
+              className="w-6 h-6 rounded-full border-2 border-white object-cover bg-gray-100"
               alt="User"
             />
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

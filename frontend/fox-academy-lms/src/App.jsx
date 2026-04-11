@@ -25,12 +25,14 @@ import Resources from "./pages/Resources";
 import Community from "./pages/Community";
 import TeamDirectory from "./pages/TeamDirectory";
 import WorkBoard from "./pages/WorkBoard";
+import MyWorkBoard from "./pages/MyWorkBoard";
 import ModuleDetail from "./pages/ModuleDetail";
 import Phase2overview from "./pages/phase2overview";
 import CreateDiscussion from "./pages/CreateDiscussion";
 import DiscussionDetail from "./pages/DiscussionDetail";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
+import SubmitDeliverable from "./pages/SubmitDeliverable";
 
 function App() {
   return (
@@ -73,6 +75,8 @@ function App() {
         <Route path="/community/discussion/:id" element={<DiscussionDetail />} />
         <Route path="/team" element={<TeamDirectory />} />
         <Route path="/work-board" element={<WorkBoard />} />
+        <Route path="/my-work-board" element={<MyWorkBoard />} />
+        <Route path="/submit-deliverable" element={<SubmitDeliverable />} />
         
         {/* Added Missing Routes */}
         <Route path="/settings" element={<Settings />} />
