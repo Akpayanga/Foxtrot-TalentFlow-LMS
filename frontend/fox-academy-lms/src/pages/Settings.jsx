@@ -153,7 +153,7 @@ export default function Settings() {
                 </Link>
               </div>
 
-              <div className="space-y-3 rounded-lg border border-[#E5E7EB] p-6">
+              <Link to="/settings/account-security" className="block space-y-3 rounded-lg border border-[#E5E7EB] p-6 hover:opacity-80 transition-opacity cursor-pointer">
                 <div>
                   <label className="block text-xs font-medium text-[#6B7280]">
                     EMAIL
@@ -174,7 +174,7 @@ export default function Settings() {
                   </label>
                   <p className="mt-1 text-[#111827]">2 Devices (Lagos, Nigeria)</p>
                 </div>
-              </div>
+              </Link>
 
               <button className="text-sm font-medium text-red-600 hover:text-red-700">
                 Delete Account
@@ -188,14 +188,14 @@ export default function Settings() {
                   Notifications
                 </h2>
                 <Link
-                  to="/settings/notifications"
+                  to="/notifications"
                   className="flex items-center gap-2 text-sm font-medium text-[#4F46E5] hover:text-[#4338CA]"
                 >
                   Manage <ChevronRight size={16} />
                 </Link>
               </div>
 
-              <div className="space-y-4">
+              <Link to="/notifications" className="block space-y-4 cursor-pointer hover:opacity-80 transition-opacity">
                 {[
                   {
                     key: "assignmentUpdates",
@@ -220,16 +220,16 @@ export default function Settings() {
                 ].map((item) => (
                   <div
                     key={item.key}
-                    className="flex items-center justify-between"
+                    className="flex items-center justify-between pointer-events-none"
                   >
                     <span className="text-[#111827]">{item.label}</span>
                     <ToggleSwitch
                       checked={notifications[item.key]}
-                      onChange={() => toggleNotification(item.key)}
+                      onChange={() => {}}
                     />
                   </div>
                 ))}
-              </div>
+              </Link>
             </section>
 
             {/* Privacy */}
@@ -367,7 +367,7 @@ export default function Settings() {
                 Your Account
               </h3>
 
-              <div className="flex flex-col items-center text-center">
+              <Link to="/profile-details" className="flex flex-col items-center text-center hover:opacity-80 transition-opacity cursor-pointer">
                 <img
                   src={amara}
                   alt="Profile"
@@ -375,7 +375,7 @@ export default function Settings() {
                 />
                 <h4 className="font-semibold text-[#111827]">Amara Obi</h4>
                 <p className="text-xs text-[#F38821]">UX Design Intern</p>
-              </div>
+              </Link>
 
               <div className="space-y-2 border-t border-[#E5E7EB] pt-4">
                 <div className="flex justify-between">

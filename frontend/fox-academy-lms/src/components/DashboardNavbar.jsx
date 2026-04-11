@@ -16,7 +16,6 @@ export default function DashboardNavbar() {
     { name: "Progress", path: "/progress" },
     { name: "Resources", path: "/resources" },
     { name: "Community", path: "/community" },
-    { name: "Settings", path: "/settings" },
   ];
 
   return (
@@ -101,9 +100,9 @@ export default function DashboardNavbar() {
 
               {/* Links */}
               <div className="flex flex-col gap-4 text-[17px] font-medium text-slate-700">
-                <Link to="/onboarding/profile" className="hover:text-indigo-600 transition-colors">Profile</Link>
+                <Link to="/profile-details" className="hover:text-indigo-600 transition-colors">Profile</Link>
                 <Link to="/progress" className="hover:text-indigo-600 transition-colors">My progress</Link>
-                <Link to="#" className="hover:text-indigo-600 transition-colors">Certificate & Badges</Link>
+                <Link to="/certifications" className="hover:text-indigo-600 transition-colors">Certificate & Badges</Link>
                 <Link to="/settings" className="hover:text-indigo-600 transition-colors">Settings</Link>
                 <Link to="#" className="hover:text-indigo-600 transition-colors">Help center</Link>
                 <Link to="/" className="text-red-700 hover:text-red-800 transition-colors mt-2">Logout</Link>

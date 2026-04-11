@@ -33,6 +33,9 @@ import DiscussionDetail from "./pages/DiscussionDetail";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
 import SubmitDeliverable from "./pages/SubmitDeliverable";
+import ProfileDetails from "./pages/ProfileDetails";
+import Certifications from "./pages/Certifications";
+import AccountSecurity from "./pages/AccountSecurity";
 
 function App() {
   return (
@@ -77,9 +80,12 @@ function App() {
         <Route path="/work-board" element={<WorkBoard />} />
         <Route path="/my-work-board" element={<MyWorkBoard />} />
         <Route path="/submit-deliverable" element={<SubmitDeliverable />} />
+        <Route path="/profile-details" element={<ProfileDetails />} />
+        <Route path="/certifications" element={<Certifications />} />
         
         {/* Added Missing Routes */}
         <Route path="/settings" element={<Settings />} />
+        <Route path="/settings/account-security" element={<AccountSecurity />} />
         <Route path="/notifications" element={<Notifications />} />
         
         {/* Catch-all fallback Route to redirect 404s and prevent blank page */}

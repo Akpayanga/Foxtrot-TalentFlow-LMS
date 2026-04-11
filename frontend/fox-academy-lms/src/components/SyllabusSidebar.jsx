@@ -53,8 +53,8 @@ export default function SyllabusSidebar() {
   const syllabus = [
     { moduleNumber: 1, title: "Synthesizing Feedback Loops", status: "Completed" },
     { moduleNumber: 2, title: "Conducting UX Research at Scale", status: "Current", progress: "02" },
-    { moduleNumber: 3, title: "Synthesizing Feedback Loops", status: "Locked" },
-    { moduleNumber: 4, title: "Synthesizing Feedback Loops", status: "Locked" },
+    { moduleNumber: 3, title: "Synthesizing Feedback Loops", status: "Completed" },
+    { moduleNumber: 4, title: "Synthesizing Feedback Loops", status: "Completed" },
     { moduleNumber: 5, title: "Final Assessment Quiz", status: "Locked", isQuiz: true },
   ];
 
