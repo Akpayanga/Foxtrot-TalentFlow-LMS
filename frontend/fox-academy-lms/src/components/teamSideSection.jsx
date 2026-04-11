@@ -1,4 +1,5 @@
 import esther from "../assets/images/esther.png";
+import { useNavigate } from "react-router-dom";
 
 function TimelineDot({ label, date, done }) {
   return (
@@ -33,6 +34,8 @@ function TimelineDot({ label, date, done }) {
 }
 
 export default function TeamSection() {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col gap-5 mx-auto max-w-[1440px]">
       {/* Your Team */}
@@ -60,7 +63,10 @@ export default function TeamSection() {
             Send Message
           </button>
         </div>
-        <button className="w-full border border-orange-400 text-[rgba(221,124,30,1)] text-sm font-semibold py-2.5 rounded-xl hover:bg-[#f37d07] transition-colors cursor-pointer hover:text-white">
+        <button 
+          onClick={() => navigate('/team')}
+          className="w-full border border-orange-400 text-[rgba(221,124,30,1)] text-sm font-semibold py-2.5 rounded-xl hover:bg-[#f37d07] transition-colors cursor-pointer hover:text-white"
+        >
           View Team
         </button>
       </div>

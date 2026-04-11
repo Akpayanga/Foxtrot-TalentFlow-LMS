@@ -1,4 +1,5 @@
 import { Bell } from "lucide-react";
+import { useState } from "react";
 import amara from "../assets/images/amara.jpg";
 import foxLogo from "../assets/images/foxlogo.svg";
 import { Link, useLocation } from "react-router-dom";
@@ -6,6 +7,7 @@ import { Link, useLocation } from "react-router-dom";
 export default function DashboardNavbar() {
   const location = useLocation();
   const currentPath = location.pathname;
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const navLinks = [
     { name: "Home", path: "/dashboard" },
@@ -46,19 +48,69 @@ export default function DashboardNavbar() {
         </div>
 
         {/* Right Section */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 relative">
           <button className="relative rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100">
             <Bell size={20} />
             <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 border-2 border-white" />
           </button>
           
-          <div className="h-8 w-8 overflow-hidden rounded-full border border-gray-200">
+          <button 
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="h-8 w-8 overflow-hidden rounded-full border-2 border-[#F38821] focus:outline-none focus:ring-2 focus:ring-orange-200 transition-all cursor-pointer"
+          >
             <img 
               src={amara} 
               alt="Profile" 
               className="h-full w-full object-cover"
             />
-          </div>
+          </button>
+
+          {/* Profile Dropdown */}
+          {isDropdownOpen && (
+            <div className="absolute top-[120%] right-0 w-[280px] bg-[#FAFAFA] rounded-3xl shadow-xl border border-gray-100 overflow-hidden z-50 p-6 flex flex-col font-sans">
+              
+              {/* User Info */}
+              <div className="flex items-center gap-3 mb-4">
+                <img src={amara} alt="Amara Okoro" className="w-12 h-12 rounded-full object-cover" />
+                <div>
+                  <h3 className="font-bold text-gray-900 text-[17px] leading-tight">Amara Okoro</h3>
+                  <p className="text-gray-500 text-sm">Amara@email.com</p>
+                </div>
+              </div>
+
+              {/* Tags */}
+              <div className="flex items-center gap-2 mb-6 text-xs font-semibold">
+                <span className="bg-indigo-50 text-indigo-900 px-3 py-1 rounded-lg">
+                  UI/UX Design
+                </span>
+                <span className="bg-[#F38821] text-white px-3 py-1 rounded-lg">
+                  cohort 3
+                </span>
+              </div>
+
+              {/* Progress */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between text-[11px] font-bold text-gray-500 tracking-widest uppercase mb-2">
+                  <span>Phase 1 Progress</span>
+                  <span className="text-gray-700 text-sm font-semibold tracking-normal">18%</span>
+                </div>
+                <div className="h-2.5 w-full rounded-full bg-indigo-50 overflow-hidden">
+                  <div className="h-full bg-indigo-600 rounded-full" style={{ width: '18%' }} />
+                </div>
+              </div>
+
+              {/* Links */}
+              <div className="flex flex-col gap-4 text-[17px] font-medium text-slate-700">
+                <Link to="/onboarding/profile" className="hover:text-indigo-600 transition-colors">Profile</Link>
+                <Link to="/progress" className="hover:text-indigo-600 transition-colors">My progress</Link>
+                <Link to="#" className="hover:text-indigo-600 transition-colors">Certificate & Badges</Link>
+                <Link to="/settings" className="hover:text-indigo-600 transition-colors">Settings</Link>
+                <Link to="#" className="hover:text-indigo-600 transition-colors">Help center</Link>
+                <Link to="/" className="text-red-700 hover:text-red-800 transition-colors mt-2">Logout</Link>
+              </div>
+
+            </div>
+          )}
         </div>
       </div>
     </nav>

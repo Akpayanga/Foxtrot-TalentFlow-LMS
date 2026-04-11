@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -29,6 +29,8 @@ import ModuleDetail from "./pages/ModuleDetail";
 import Phase2overview from "./pages/phase2overview";
 import CreateDiscussion from "./pages/CreateDiscussion";
 import DiscussionDetail from "./pages/DiscussionDetail";
+import Settings from "./pages/Settings";
+import Notifications from "./pages/Notifications";
 
 function App() {
   return (
@@ -65,13 +67,19 @@ function App() {
         <Route path="/assignments" element={<Assignments />} />
         <Route path="/assignments/submitted" element={<SubmittedAssignments />} />
         <Route path="/assignments/user-persona" element={<UserPersonaAssignment />} />
-        {/* <Route path="/progress" element={<Progress />} /> */}
         <Route path="/resources" element={<Resources />} />
         <Route path="/community" element={<Community />} />
         <Route path="/community/create" element={<CreateDiscussion />} />
         <Route path="/community/discussion/:id" element={<DiscussionDetail />} />
         <Route path="/team" element={<TeamDirectory />} />
         <Route path="/work-board" element={<WorkBoard />} />
+        
+        {/* Added Missing Routes */}
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/notifications" element={<Notifications />} />
+        
+        {/* Catch-all fallback Route to redirect 404s and prevent blank page */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
