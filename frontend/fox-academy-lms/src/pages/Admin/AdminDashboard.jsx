@@ -310,9 +310,9 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <button className="flex items-center gap-2 rounded-md bg-[#D97706] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#B45309]">
+              <Link to="/control-room/mentors/add" className="flex items-center gap-2 rounded-md bg-[#D97706] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#B45309] w-max">
                 <Plus size={16} /> Add New Mentor
-              </button>
+              </Link>
             </div>
 
             {/* Cohort Activity Feed */}

@@ -43,6 +43,9 @@ import MentorManagement from "./pages/Admin/MentorManagement";
 import InternManagement from "./pages/Admin/InternManagement";
 import CohortManagement from "./pages/Admin/CohortManagement";
 import AdminAnalytics from "./pages/Admin/AdminAnalytics";
+import AddMentor from "./pages/Admin/AddMentor";
+import MentorActivate from "./pages/MentorActivate";
+import MentorProfileSetup from "./pages/MentorProfileSetup";
 
 function App() {
   return (
@@ -59,6 +62,8 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/forgot-password/sent" element={<ForgotPasswordSent />} />
         <Route path="/welcome" element={<Welcome />} />
+        <Route path="/mentor/activate" element={<MentorActivate />} />
+        <Route path="/mentor/setup" element={<MentorProfileSetup />} />
         <Route path="/onboarding/profile" element={<SetProfile />} />
         <Route path="/onboarding/team" element={<JoinTeam />} />
         <Route path="/onboarding/learn" element={<LearnPreview />} />
@@ -100,6 +105,7 @@ function App() {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/control-room/dashboard" element={<AdminDashboard />} />
         <Route path="/control-room/mentors" element={<MentorManagement />} />
+        <Route path="/control-room/mentors/add" element={<AddMentor />} />
         <Route path="/control-room/interns" element={<InternManagement />} />
         <Route path="/control-room/cohorts" element={<CohortManagement />} />
         <Route path="/control-room/analytics" element={<AdminAnalytics />} />

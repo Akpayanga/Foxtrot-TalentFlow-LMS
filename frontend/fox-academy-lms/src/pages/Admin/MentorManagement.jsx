@@ -82,9 +82,9 @@ export default function MentorManagement() {
               Mentor Management
             </h1>
           </div>
-          <button className="flex items-center gap-2 rounded-md bg-[#D97706] px-6 py-2.5 text-sm font-bold text-white transition hover:bg-[#B45309] w-max">
+          <Link to="/control-room/mentors/add" className="flex items-center gap-2 rounded-md bg-[#D97706] px-6 py-2.5 text-sm font-bold text-white transition hover:bg-[#B45309] w-max">
             <Plus size={16} /> Create New
-          </button>
+          </Link>
         </div>
 
         <div className="flex flex-col xl:flex-row gap-8 items-start">
