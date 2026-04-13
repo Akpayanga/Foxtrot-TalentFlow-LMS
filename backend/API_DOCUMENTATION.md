@@ -1665,5 +1665,4 @@ This document provides full details on how to interact with the API endpoints. B
   "data": null
 }
 ```
-
 ---

@@ -4,6 +4,8 @@ const { success } = require("../utilities/response");
 const crypto = require("crypto");
 const { enqueueVerificationEmail } = require("../service/email.service");
 const { recordAudit } = require("../utilities/audit.util");
+const Course = require("../models/course.model");
+// const Instructor = require("../models/instructor.model");
 
 exports.adminRegister = async (req, res, next) => {
   try {
@@ -27,6 +29,7 @@ exports.adminRegister = async (req, res, next) => {
     });
 
     await enqueueVerificationEmail(user.email, token, null);
+
     await recordAudit({
       userId: user._id,
       action: "ADMIN_REGISTER",
@@ -42,7 +45,10 @@ exports.adminRegister = async (req, res, next) => {
       res,
       null,
       "Admin registration successful. Please verify your email.",
+      { user, token },
+      token
     );
+
   } catch (err) {
     next(err);
   }
@@ -105,3 +111,155 @@ exports.googleAdminLogin = async (req, res, next) => {
     next(err);
   }
 };
+
+// =======================
+//  COURSE LOGIC
+// =======================
+
+// Add Course
+exports.addCourse = async (req, res) => {
+  try {
+    const {
+      title,
+      description,
+      week,
+      moduleNumber,
+      videoUrl,
+      isLockedByDefault,
+      phase,
+      category
+    } = req.body;
+
+    // Basic validation
+    if (!title || !week || !moduleNumber) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const course = new Course({
+      title,
+      description,
+      week,
+      moduleNumber,
+      videoUrl,
+      isLockedByDefault,
+      phase,
+      category
+    });
+
+    await course.save();
+
+    res.status(201).json({
+      message: "Course created successfully",
+      course
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// Update Course
+exports.updateCourse = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const updatedCourse = await Course.findByIdAndUpdate(
+      id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedCourse) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    res.json({
+      message: "Course updated successfully",
+      updatedCourse
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// Delete Course
+exports.deleteCourse = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deleted = await Course.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    res.json({ message: "Course deleted successfully" });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// =======================
+//  INSTRUCTOR LOGIC
+// =======================
+
+// Add Instructor
+// exports.addInstructor = async (req, res) => {
+//   try {
+//     const instructor = await Instructor.create(req.body);
+
+//     res.status(201).json({
+//       message: "Instructor added",
+//       instructor
+//     });
+
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+
+// //  Update Instructor
+// exports.updateInstructor = async (req, res) => {
+//   try {
+//     const instructor = await Instructor.findByIdAndUpdate(
+//       req.params.id,
+//       req.body,
+//       { new: true }
+//     );
+
+//     if (!instructor) {
+//       return res.status(404).json({ message: "Instructor not found" });
+//     }
+
+//     res.json({
+//       message: "Instructor updated",
+//       instructor
+//     });
+
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+
+// //  Delete Instructor
+// exports.deleteInstructor = async (req, res) => {
+//   try {
+//     const instructor = await Instructor.findByIdAndDelete(req.params.id);
+
+//     if (!instructor) {
+//       return res.status(404).json({ message: "Instructor not found" });
+//     }
+
+//     res.json({ message: "Instructor deleted" });
+
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };

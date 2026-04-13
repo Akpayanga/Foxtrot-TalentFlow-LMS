@@ -9,22 +9,6 @@ const getCurrentCourseProgress = async (req, res, next) => {
   try {
     const { userId, courseId } = req.params;
 
-    // const studentPurchasedCourses = await StudentCourses.findOne({ userId });
-
-    // const isCurrentCoursePurchasedByCurrentUserOrNot =
-    //   studentPurchasedCourses?.courses?.findIndex(
-    //     (item) => item.courseId === courseId
-    //   ) > -1;
-
-    // if (!isCurrentCoursePurchasedByCurrentUserOrNot) {
-    //   return res.status(200).json({
-    //     success: true,
-    //     data: {
-    //       isPurchased: false,
-    //     },
-    //     message: "You need to purchase this course to access it.",
-    //   });
-    // }
     const currentUserCourseProgress = await CourseProgress.findOne({
       userId,
       courseId,

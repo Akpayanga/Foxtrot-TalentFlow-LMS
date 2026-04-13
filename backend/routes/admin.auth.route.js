@@ -9,8 +9,11 @@ const { adminRegisterSchema } = require("../validation/Auth.validation");
 const validate = require("../middleware/validate.middleware");
 
 // Only admin-specific flows
-router.post("/register", requireAuthAndRole("admin"), 
-            validate(adminRegisterSchema), adminAuthController.adminRegister);
+router.post("/register", adminAuthController.adminRegister);
+
+// router.post("/register", requireAuthAndRole("admin"), 
+//             validate(adminRegisterSchema), adminAuthController.adminRegister);
+
 router.get("/verify", adminAuthController.adminVerifyEmail);
 
 router.get("/google", passport.authenticate("google-admin", 
