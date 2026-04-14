@@ -25,11 +25,6 @@ const disciplineOptions = [
   "Social Media",
 ];
 
-const roleOptions = [
-  "student",
-  "instructor",
-];
-
 function SectionHeading({ step, title }) {
   return (
     <div className="flex items-center gap-3">
@@ -103,7 +98,6 @@ export default function ApplicationForm() {
     email: "",
     phoneNumber: "",
     primaryDiscipline: "",
-    secondaryDiscipline: "",
     personalStatement: "",
     portfolioUrl: "",
     githubLinkedin: "",
@@ -192,15 +186,6 @@ export default function ApplicationForm() {
                     onChange={handleFieldChange}
                     options={disciplineOptions}
                     placeholder="Select Discipline"
-                  />
-                  <SelectField
-                    label="Select Role"
-                    name="secondaryDiscipline"
-                    value={formData.secondaryDiscipline}
-                    onChange={handleFieldChange}
-                    options={roleOptions}
-                    placeholder="Select Role"
-                    required={false}
                   />
                 </div>
               </div>
