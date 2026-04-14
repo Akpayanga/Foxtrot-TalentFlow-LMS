@@ -1,4 +1,4 @@
-import esther from "../assets/images/esther.png";
+import esther from "../assets/images/Esther.png";
 import { useNavigate } from "react-router-dom";
 
 function TimelineDot({ label, date, done }) {
