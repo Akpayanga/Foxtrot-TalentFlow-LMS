@@ -5,6 +5,7 @@ import {
   GraduationCap,
   Star,
   TrendingUp,
+  ChevronDown,
 } from "lucide-react";
 import { submitApplication } from "../services/applicationService";
 
@@ -24,6 +25,11 @@ const disciplineOptions = [
   "Social Media",
 ];
 
+const roleOptions = [
+  "Student",
+  "Instructor",
+];
+
 function SectionHeading({ step, title }) {
   return (
     <div className="flex items-center gap-3">
@@ -40,7 +46,7 @@ function SectionHeading({ step, title }) {
 function Field({ label, placeholder, type = "text", name, value, onChange, required = true }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-[12px] font-medium uppercase tracking-[0.6px] text-[#616161]">
+      <span className="mb-2 block text-[12px] font-bold uppercase tracking-[0.8px] text-[#4B5563]">
         {label}
       </span>
       <input
@@ -49,9 +55,40 @@ function Field({ label, placeholder, type = "text", name, value, onChange, requi
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full rounded-[4px] border border-[#D1D5DC] bg-white px-3 py-3 text-[16px] text-[#374151] placeholder:text-[#99A1AF] focus:border-[#F38821] focus:outline-none"
+        className="w-full rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-3 text-[16px] text-[#1F2937] transition duration-200 focus:border-[#F38821] focus:outline-none placeholder:text-[#99A1AF]"
         required={required}
       />
+    </label>
+  );
+}
+
+function SelectField({ label, name, value, onChange, options, placeholder, required = true }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-[12px] font-bold uppercase tracking-[0.8px] text-[#4B5563]">
+        {label}
+      </span>
+      <div className="relative">
+        <select
+          name={name}
+          value={value}
+          onChange={onChange}
+          className="w-full appearance-none rounded-[8px] border border-[#E5E7EB] bg-white px-4 py-3 text-[16px] text-[#1F2937] transition duration-200 focus:border-[#F38821] focus:outline-none"
+          required={required}
+        >
+          <option value="" disabled>
+            {placeholder}
+          </option>
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
+          <ChevronDown size={18} className="text-[#374151]" strokeWidth={2.5} />
+        </div>
+      </div>
     </label>
   );
 }
@@ -66,6 +103,7 @@ export default function ApplicationForm() {
     email: "",
     phoneNumber: "",
     primaryDiscipline: "",
+    secondaryDiscipline: "",
     personalStatement: "",
     portfolioUrl: "",
     githubLinkedin: "",
@@ -147,29 +185,25 @@ export default function ApplicationForm() {
                   placeholder="+234 000 000 0000"
                 />
 
-                <label className="block">
-                  <span className="mb-2 block text-[12px] font-medium uppercase tracking-[0.6px] text-[#616161]">
-                    Primary Discipline
-                  </span>
-                  <select
+                  <SelectField
+                    label="Primary Discipline"
                     name="primaryDiscipline"
                     value={formData.primaryDiscipline}
                     onChange={handleFieldChange}
-                    className="w-full rounded-[4px] border border-[#D1D5DC] bg-white px-3 py-3 text-[16px] text-[#374151] focus:border-[#F38821] focus:outline-none"
-                    required
-                  >
-                    <option value="" disabled>
-                      Select Discipline
-                    </option>
-                    {disciplineOptions.map((discipline) => (
-                      <option key={discipline} value={discipline}>
-                        {discipline}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                    options={disciplineOptions}
+                    placeholder="Select Discipline"
+                  />
+                  <SelectField
+                    label="Select Role"
+                    name="secondaryDiscipline"
+                    value={formData.secondaryDiscipline}
+                    onChange={handleFieldChange}
+                    options={roleOptions}
+                    placeholder="Select Role"
+                    required={false}
+                  />
+                </div>
               </div>
-            </div>
 
             <div className="space-y-6">
               <SectionHeading step="02" title="Expertise Level" />
