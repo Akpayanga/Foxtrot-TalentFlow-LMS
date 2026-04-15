@@ -9,7 +9,7 @@ const requireRole = require("../middleware/role.middleware");
 const auth = require("../middleware/Auth.middle"); 
 const requireOnboarding = require("../middleware/Require.Onboarding.middleware");
 
-const {preRegisterSchema,loginSchema,forgotPasswordSchema,resetPasswordSchema,completeStudentProfileSchema,completeMentorProfileSchema} = require("../validation/Auth.validation");
+const { preRegisterSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, completeStudentProfileSchema, completeMentorProfileSchema, updateProfileSchema } = require("../validation/Auth.validation");
 
 // Invitation flows
 router.post("/pre-register", validate(preRegisterSchema), userInstructorAuth.preRegister);
@@ -31,6 +31,12 @@ router.post("/complete-student-profile",auth,requireRole("student"), validate(co
 // Mentor profile completion
 router.post("/complete-mentor-profile",auth,requireRole("instructor"),validate(completeMentorProfileSchema), userInstructorAuth.completeMentorProfile);
 
+// Update profile
+router.put("/update-profile", auth, validate(updateProfileSchema), userInstructorAuth.updateProfile);
+
+// Delete profile
+router.delete("/delete-profile", auth, userInstructorAuth.deleteProfile);
+
 // Logout
 router.post("/logout", auth, userInstructorAuth.logout);
 
@@ -42,3 +48,4 @@ router.get("/google", passport.authenticate("google-user-instructor", { scope: [
 router.get("/google/callback", passport.authenticate("google-user-instructor", { session: false }), userInstructorAuth.googleUserInstructorLogin);
 
 module.exports = router;
+

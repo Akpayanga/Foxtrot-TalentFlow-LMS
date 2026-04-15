@@ -152,7 +152,7 @@
       ]
     },
     {
-      "name": "User & Instructor Auth",
+      "name": "Sudent pre-reAuth",
       "item": [
         {
           "name": "/api/v1/auth/pre-register",
@@ -161,7 +161,7 @@
             "url": "{{baseUrl}}/api/v1/auth/pre-register",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"adeboiz2021@gmail.com\",\n  \"role\": \"student\"\n}",
+              "raw": "{\n  \"firstName\": \"Amara\",\n  \"lastName\": \"Okafor\",\n  \"email\": \"amara.okafor@example.com\",\n  \"phoneNumber\": \"+2348012345678\",\n  \"discipline\": \"uiux\",\n  \"expertiseLevel\": \"entry\",\n  \"statement\": \"I am passionate about creating user-centered designs and want to grow my skills with Trueminds.\",\n  \"portfolioUrl\": \"https://amara-portfolio.com\",\n  \"githubOrLinkedIn\": \"https://linkedin.com/in/amaraokafor\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -226,7 +226,7 @@
             "url": "{{baseUrl}}/api/v1/auth/verify-invitation",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"token\": \"dummy-token-12345\",\n  \"code\": \"123456\"\n}",
+               "raw": "{\n  \"token\": \"dummy-token-12345\",\n  \"code\": \"ABC123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -287,7 +287,7 @@
             "url": "{{baseUrl}}/api/v1/auth/complete-registration",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"adeboiz2021@gmail.com\",\n  \"password\": \"Str0ng_P@ssw0rd!123\"\n}",
+              "raw": "{\n  \"email\": \"amara.okafor@example.com\",\n  \"password\": \"Str0ng_P@ssw0rd!123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -348,7 +348,7 @@
             "url": "{{baseUrl}}/api/v1/auth/login",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"adeboiz2021@gmail.com\",\n  \"password\": \"Str0ng_P@ssw0rd!123\",\n  \"provider\": \"local\"\n}",
+              "raw": "{\n  \"email\": \"amara.okafor@example.com\",\n  \"password\": \"Str0ng_P@ssw0rd!123\",\n  \"provider\": \"local\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -526,7 +526,7 @@
             "url": "{{baseUrl}}/api/v1/auth/complete-student-profile",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"course\": \"backend\"\n}",
+               "raw": "{\n  \"course\": \"uiux\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

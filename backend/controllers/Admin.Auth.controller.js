@@ -7,7 +7,10 @@ const {
   verifyToken,
 } = require("../utilities/jwt");
 const crypto = require("crypto");
-const { enqueueVerificationEmail, enqueueWelcomeEmail } = require("../service/email.service");
+const {
+  enqueueVerificationEmail,
+  enqueueWelcomeEmail,
+} = require("../service/email.service");
 const { recordAudit } = require("../utilities/audit.util");
 
 // ADMIN REGISTER
@@ -54,13 +57,12 @@ exports.adminRegister = async (req, res, next) => {
     return success(
       res,
       { user, accessToken, verificationToken: token },
-      "Admin registration successful. Use the token to verify email."
+      "Admin registration successful. Use the token to verify email.",
     );
   } catch (err) {
     next(err);
   }
 };
-
 
 // ADMIN VERIFY EMAIL
 exports.adminVerifyEmail = async (req, res, next) => {
@@ -129,7 +131,11 @@ exports.googleAdminLogin = async (req, res, next) => {
 exports.adminLogin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email, provider: "local", role: "admin" }).notDeleted();
+    const user = await User.findOne({
+      email,
+      provider: "local",
+      role: "admin",
+    }).notDeleted();
     if (!user) throw new ApiError(404, "Admin not found");
     if (!user.isVerified) throw new ApiError(403, "Admin account not verified");
 
@@ -171,9 +177,13 @@ exports.adminRefreshToken = async (req, res, next) => {
 
     const decoded = verifyToken(refreshToken, process.env.JWT_REFRESH_SECRET);
     const user = await User.findById(decoded.id).notDeleted();
-    if (!user || user.role !== "admin") throw new ApiError(404, "Admin not found");
+    if (!user || user.role !== "admin")
+      throw new ApiError(404, "Admin not found");
 
-    const newAccessToken = generateAccessToken({ id: user._id, role: user.role });
+    const newAccessToken = generateAccessToken({
+      id: user._id,
+      role: user.role,
+    });
 
     await recordAudit({
       userId: user._id,
@@ -186,7 +196,11 @@ exports.adminRefreshToken = async (req, res, next) => {
       metadata: { role: "admin" },
     });
 
-    return success(res, { accessToken: newAccessToken }, "Admin access token refreshed");
+    return success(
+      res,
+      { accessToken: newAccessToken },
+      "Admin access token refreshed",
+    );
   } catch (err) {
     next(err);
   }
@@ -209,6 +223,207 @@ exports.adminLogout = async (req, res, next) => {
     });
 
     return success(res, null, "Admin logout successful");
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ADMIN INVITE MENTOR
+exports.adminInviteMentor = async (req, res, next) => {
+  try {
+    const { fullName, email, discipline, roleTitle } = req.body;
+
+    if (!email || !discipline || !roleTitle) {
+      throw new ApiError(400, "Email, discipline, and role title are required");
+    }
+
+    // Check if mentor already exists
+    let user = await User.findOne({ email, provider: "local" });
+    if (user) throw new ApiError(400, "Mentor already exists");
+
+    // Generate invitation code + token
+    const invitationCode = crypto.randomBytes(6).toString("hex").toUpperCase();
+    const token = generateRefreshToken({ email });
+
+    const expiryHours =
+      Number(process.env.INVITE_EXPIRY_HOURS_INSTRUCTOR) || 48;
+
+    // Create mentor record
+    user = await User.create({
+      firstName: fullName.split(" ")[0],
+      lastName: fullName.split(" ").slice(1).join(" "),
+      email,
+      role: "instructor",
+      discipline,
+      roleTitle,
+      preRegistered: true,
+      invitationCode,
+      verificationToken: token,
+      verificationTokenExpiry: Date.now() + expiryHours * 60 * 60 * 1000,
+    });
+
+    // Enqueue verification email
+    await enqueueVerificationEmail(email, token, invitationCode, "instructor");
+
+    // Audit log
+    await recordAudit({
+      userId: user._id,
+      action: "ADMIN_INVITE_MENTOR",
+      details: `Admin invited mentor ${email} for ${discipline}`,
+      req,
+      status: "success",
+      resourceId: user._id,
+      resourceType: "User",
+      metadata: { discipline, roleTitle, email },
+    });
+
+    return success(
+      res,
+      { invitationCode, token },
+      `Mentor invitation sent to ${email}. Link expires in ${expiryHours} hours.`,
+    );
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.adminAddStudent = async (req, res, next) => {
+  try {
+    const { firstName, lastName, email, course, profilePhoto } = req.body;
+
+    let user = await User.findOne({ email, provider: "local" });
+    if (user) throw new ApiError(400, "Student already exists");
+
+    user = await User.create({
+      firstName,
+      lastName,
+      email,
+      role: "student",
+      course,
+      profilePhoto: profilePhoto || undefined,
+      isVerified: true,
+    });
+
+    await recordAudit({
+      userId: user._id,
+      action: "ADMIN_ADD_STUDENT",
+      details: `Admin added student ${email}`,
+      req,
+      status: "success",
+      resourceId: user._id,
+      resourceType: "User",
+      metadata: { role: "student", course },
+    });
+
+    return success(res, user, "Student added successfully");
+  } catch (err) {
+    next(err);
+  }
+};
+exports.adminUpdateUser = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const updates = req.body;
+
+    const user = await User.findById(userId).notDeleted();
+    if (!user) throw new ApiError(404, "User not found");
+
+    Object.assign(user, updates);
+    await user.save();
+
+    await recordAudit({
+      userId: user._id,
+      action: "ADMIN_UPDATE_USER",
+      details: `Admin updated ${user.role} ${user.email}`,
+      req,
+      status: "success",
+      resourceId: user._id,
+      resourceType: "User",
+      metadata: { role: user.role },
+    });
+
+    return success(res, user, `${user.role} updated successfully`);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Get single user by ID
+exports.adminGetUser = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId).notDeleted();
+    if (!user) throw new ApiError(404, "User not found");
+
+    return success(res, user, `${user.role} retrieved successfully`);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Get users by filter (name or email)
+exports.adminGetUsers = async (req, res, next) => {
+  try {
+    const { role, name, email } = req.query;
+    const filter = { deletedAt: null };
+
+    if (role) filter.role = role;
+    if (name)
+      filter.$or = [
+        { firstName: new RegExp(name, "i") },
+        { lastName: new RegExp(name, "i") },
+      ];
+    if (email) filter.email = new RegExp(email, "i");
+
+    const users = await User.find(filter);
+    return success(res, users, "Users retrieved successfully");
+  } catch (err) {
+    next(err);
+  }
+};
+exports.adminDeleteUser = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) throw new ApiError(404, "User not found");
+
+    await User.softDelete(userId);
+
+    await recordAudit({
+      userId: user._id,
+      action: "ADMIN_DELETE_USER",
+      details: `Admin deleted ${user.role} ${user.email}`,
+      req,
+      status: "success",
+      resourceId: user._id,
+      resourceType: "User",
+      metadata: { role: user.role },
+    });
+
+    return success(res, null, `${user.role} deleted successfully`);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.adminRestoreUser = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.restore(userId);
+    if (!user) throw new ApiError(404, "User not found or not deleted");
+
+    await recordAudit({
+      userId: user._id,
+      action: "ADMIN_RESTORE_USER",
+      details: `Admin restored ${user.role} ${user.email}`,
+      req,
+      status: "success",
+      resourceId: user._id,
+      resourceType: "User",
+      metadata: { role: user.role },
+    });
+
+    return success(res, user, `${user.role} restored successfully`);
   } catch (err) {
     next(err);
   }

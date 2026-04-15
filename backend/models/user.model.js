@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema(
     firstName: { type: String, required: true, trim: true },
     lastName: { type: String, required: true, trim: true },
     email: { type: String, required: true, lowercase: true },
+    phoneNumber: { type: String, trim: true },
     password: {
       type: String,
       required: function () {
@@ -16,9 +17,34 @@ const userSchema = new mongoose.Schema(
     provider: { type: String, enum: ["local", "google"], default: "local" },
     role: {
       type: String,
-      enum: ["student", "instructor", "admin"],
+      enum: ["student"], // RESTRICTED: only student role allowed
       default: "student",
     },
+    // Pre-registration fields
+    discipline: {
+      type: String,
+      enum: [
+        "backend",
+        "frontend",
+        "uiux",
+        "graphicdesign",
+        "socialmedia",
+        "cybersecurity",
+      ],
+      required: function () {
+        return this.preRegistered;
+      },
+    },
+    expertiseLevel: {
+      type: String,
+      enum: ["entry", "intermediate", "senior", "lead"],
+      required: function () {
+        return this.preRegistered;
+      },
+    },
+    statement: { type: String, trim: true }, // motivation text
+    portfolioUrl: { type: String, trim: true },
+    githubOrLinkedIn: { type: String, trim: true },
 
     // Verification
     isVerified: { type: Boolean, default: false },
@@ -28,24 +54,45 @@ const userSchema = new mongoose.Schema(
     // Invitation flow
     invitationCode: { type: String, default: null },
     isInvited: { type: Boolean, default: false },
-    preRegistered: { type: Boolean, default: false }, // for step 1
+    preRegistered: { type: Boolean, default: false },
 
-    // student Onboarding
+    // Student onboarding
     studentId: { type: String, unique: true, sparse: true },
     course: {
       type: String,
-      enum: ["backend", "cybersecurity", "frontend", "product design"],
+      enum: [
+        "backend",
+        "frontend",
+        "uiux",
+        "graphicdesign",
+        "socialmedia",
+        "cybersecurity",
+      ],
       required: function () {
         return this.role === "student" && !this.preRegistered;
       },
     },
-
+    cohort: {
+      type: String,
+      trim: true,
+      default: function () {
+        // Default to current year Phase 1 cohort
+        const year = new Date().getFullYear();
+        return `Phase 1 - ${year}`;
+      },
+    },
     // Instructor onboarding
     bio: { type: String, trim: true },
     linkedIn: { type: String, trim: true },
     phoneNumber: { type: String, trim: true },
     roleTitle: { type: String, trim: true },
     cohort: { type: String, trim: true },
+    profilePhoto: {
+      type: String,
+      trim: true,
+      default: "https://cdn.foxacademy.com/defaults/avatar.png", // placeholder avatar
+    },
+    availability: { type: Boolean, default: true },
 
     // Password reset
     resetToken: { type: String, default: null },

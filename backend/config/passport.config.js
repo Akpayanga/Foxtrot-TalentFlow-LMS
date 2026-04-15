@@ -122,25 +122,29 @@ passport.use(
             lastName: profile.name?.familyName || "User",
             email,
             provider: "google",
-            role: "student", // or instructor depending on context
+            role: "student", // restricted to student
             preRegistered: true,
             invitationCode,
             verificationToken: token,
-            verificationTokenExpiry: Date.now() + 10 * 60 * 1000,
+            verificationTokenExpiry: Date.now() + 24 * 60 * 60 * 1000, // 24h expiry
           });
 
           await sendVerificationEmail(email, token, invitationCode);
 
-          //Audit log for Google User/Instructor registration
           await recordAudit({
             userId: user._id,
             action: "USER_GOOGLE_PRE_REGISTER",
-            details: "User pre-registered via Google OAuth",
+            details: `Student pre-registered via Google: ${user.email}`,
             req: {},
             status: "success",
             resourceId: user._id,
             resourceType: "User",
-            metadata: { role: user.role, provider: "google" },
+            metadata: {
+              email: user.email,
+              discipline: user.discipline,
+              expertiseLevel: user.expertiseLevel,
+              provider: "google",
+            },
           });
         }
 
@@ -150,20 +154,27 @@ passport.use(
           });
         }
 
-        //Send welcome email once verified
         await enqueueWelcomeEmail(user.email);
 
         const token = generateAccessToken({ id: user._id, role: user.role });
 
+        // Enriched audit logging for Google login
         await recordAudit({
           userId: user._id,
           action: "USER_GOOGLE_LOGIN",
-          details: `${user.role} logged in via Google OAuth`,
+          details: `Student logged in via Google: ${user.email}`,
           req: {},
           status: "success",
           resourceId: user._id,
           resourceType: "User",
-          metadata: { role: user.role, provider: "google" },
+          metadata: {
+            email: user.email,
+            discipline: user.discipline,
+            expertiseLevel: user.expertiseLevel,
+            course: user.course,
+            studentId: user.studentId,
+            provider: "google",
+          },
         });
 
         return done(null, { user, token });
@@ -173,5 +184,3 @@ passport.use(
     },
   ),
 );
-
-module.exports = passport;

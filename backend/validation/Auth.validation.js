@@ -1,11 +1,30 @@
 const Joi = require("joi");
 
-// Pre-register schema (students/instructors)
+// Pre-register schema (students only)
 exports.preRegisterSchema = Joi.object({
-  firstName: Joi.string().required(),
-  lastName: Joi.string().required(),
+  firstName: Joi.string().trim().required(),
+  lastName: Joi.string().trim().required(),
   email: Joi.string().email().required(),
-  role: Joi.string().valid("student", "instructor").required(),
+  phoneNumber: Joi.string().trim().required(),
+
+  discipline: Joi.string()
+    .valid(
+      "backend",
+      "frontend",
+      "uiux",
+      "graphicdesign",
+      "socialmedia",
+      "cybersecurity",
+    )
+    .required(),
+
+  expertiseLevel: Joi.string()
+    .valid("entry", "intermediate", "senior", "lead")
+    .required(),
+
+  statement: Joi.string().trim().required(),
+  portfolioUrl: Joi.string().uri().required(),
+  githubOrLinkedIn: Joi.string().uri().required(),
 });
 
 // Admin register schema (normal flow)
@@ -14,7 +33,7 @@ exports.adminRegisterSchema = Joi.object({
   lastName: Joi.string().required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(8).required(),
-  role: Joi.string().valid("admin").required()
+  role: Joi.string().valid("admin").required(),
 });
 
 //  Admin login schema
@@ -49,14 +68,89 @@ exports.resetPasswordSchema = Joi.object({
 // Student profile completion
 exports.completeStudentProfileSchema = Joi.object({
   course: Joi.string()
-    .valid("backend", "cybersecurity", "frontend", "product design")
-    .required()
+    .valid(
+      "backend",
+      "frontend",
+      "uiux",
+      "graphicdesign",
+      "socialmedia",
+      "cybersecurity",
+    )
+    .required(),
+  profilePhoto: Joi.string().uri().optional(), // NEW
 });
 
-// Mentor profile completion
 exports.completeMentorProfileSchema = Joi.object({
   bio: Joi.string().min(10).required(),
   roleTitle: Joi.string().required(),
   linkedIn: Joi.string().uri().optional(),
-  phoneNumber: Joi.string().optional()
+  phoneNumber: Joi.string().optional(),
+  profilePhoto: Joi.string().uri().optional(),
+  availability: Joi.boolean().default(true),
+});
+
+exports.adminInviteMentorSchema = Joi.object({
+  fullName: Joi.string().required(),
+  email: Joi.string().email().required(),
+  discipline: Joi.string()
+    .valid(
+      "backend",
+      "frontend",
+      "uiux",
+      "graphicdesign",
+      "socialmedia",
+      "cybersecurity",
+    )
+    .required(),
+  roleTitle: Joi.string().required(),
+});
+
+
+exports.updateProfileSchema = Joi.object({
+  bio: Joi.string().min(10).optional(),
+  roleTitle: Joi.string().optional(),
+  linkedIn: Joi.string().uri().optional(),
+  phoneNumber: Joi.string().optional(),
+  profilePhoto: Joi.string().uri().optional(),
+  availability: Joi.boolean().optional(),
+  course: Joi.string().valid(
+    "backend",
+    "frontend",
+    "uiux",
+    "graphicdesign",
+    "socialmedia",
+    "cybersecurity"
+  ).optional()
+});
+
+// Admin update user schema
+exports.adminUpdateUserSchema = Joi.object({
+  firstName: Joi.string().optional(),
+  lastName: Joi.string().optional(),
+  email: Joi.string().email().optional(),
+  phoneNumber: Joi.string().optional(),
+  profilePhoto: Joi.string().uri().optional(),
+  isActive: Joi.boolean().optional(),
+
+  // Student-specific
+  course: Joi.string().valid(
+    "backend",
+    "frontend",
+    "uiux",
+    "graphicdesign",
+    "socialmedia",
+    "cybersecurity"
+  ).optional(),
+
+  // Mentor-specific
+  bio: Joi.string().min(10).optional(),
+  roleTitle: Joi.string().optional(),
+  linkedIn: Joi.string().uri().optional(),
+  availability: Joi.boolean().optional()
+});
+
+exports.adminGetUsersSchema = Joi.object({
+  role: Joi.string().valid("student", "instructor").optional(),
+  name: Joi.string().optional(),
+  email: Joi.string().email().optional()
 });

@@ -10,60 +10,94 @@ const crypto = require("crypto");
 const { enqueueVerificationEmail, enqueueWelcomeEmail } = require("../service/email.service");
 const { recordAudit } = require("../utilities/audit.util");
 
-// Pre-register (students/instructors)
+// Pre-register (students only)
 exports.preRegister = async (req, res, next) => {
   try {
-    const { firstName, lastName, email, role } = req.body;
-    if (!["student", "instructor"].includes(role))
-      throw new ApiError(400, "Invalid role");
+    const {
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      discipline,
+      expertiseLevel,
+      statement,
+      portfolioUrl,
+      githubOrLinkedIn,
+    } = req.body;
+
+    // Validate discipline and expertiseLevel against enums
+    const validDisciplines = [
+      "backend",
+      "frontend",
+      "uiux",
+      "graphicdesign",
+      "socialmedia",
+      "cybersecurity",
+    ];
+    const validExpertiseLevels = ["entry", "intermediate", "senior", "lead"];
+
+    if (!validDisciplines.includes(discipline)) {
+      throw new ApiError(400, "Invalid discipline selection");
+    }
+    if (!validExpertiseLevels.includes(expertiseLevel)) {
+      throw new ApiError(400, "Invalid expertise level");
+    }
 
     let user = await User.findOne({ email, provider: "local" });
     if (user) throw new ApiError(400, "User already exists");
 
     const invitationCode = crypto.randomBytes(6).toString("hex").toUpperCase();
     const token = generateRefreshToken({ email });
-    // Role-based expiry with fallback
-    let expiryHours;
-    if (role === "student") {
-      expiryHours = Number(process.env.INVITE_EXPIRY_HOURS_STUDENT) || 48;
-    } else if (role === "instructor") {
-      expiryHours = Number(process.env.INVITE_EXPIRY_HOURS_INSTRUCTOR) || 72;
-    } else {
-      expiryHours = Number(process.env.INVITE_EXPIRY_HOURS_DEFAULT) || 24;
-    }
+
+    
+    const expiryHours = Number(process.env.INVITE_EXPIRY_HOURS_STUDENT) || 24;
 
     user = await User.create({
       firstName,
       lastName,
       email,
-      role,
+      phoneNumber,
+      role: "student",
+      discipline,
+      expertiseLevel,
+      statement,
+      portfolioUrl,
+      githubOrLinkedIn,
       preRegistered: true,
       invitationCode,
       verificationToken: token,
       verificationTokenExpiry: Date.now() + expiryHours * 60 * 60 * 1000,
     });
 
-    await enqueueVerificationEmail(email, token, invitationCode, role);
+    await enqueueVerificationEmail(email, token, invitationCode, "student");
+
     await recordAudit({
-      userId: user._id,
-      action: "PRE_REGISTER",
-      details: `${role} pre-registered`,
-      req,
-      status: "success",
-      resourceId: user._id,
-      resourceType: "User",
-    });
+  userId: user._id,
+  action: "PRE_REGISTER",
+  details: `Student pre-registered: ${discipline}, ${expertiseLevel} level`,
+  req,
+  status: "success",
+  resourceId: user._id,
+  resourceType: "User",
+  metadata: {
+    discipline,
+    expertiseLevel,
+    email,
+    portfolioUrl,
+    githubOrLinkedIn,
+    cohort: user.cohort || "Pending assignment",
+  },
+});
 
     return success(
       res,
       { token, invitationCode },
-      `Pre-registration successful. You will get an email notification if selected. Pls, watch out for the email including your Junk/Spam mail in the next 10 minutes. Link expires in ${expiryHours} hours.`,
+      `Pre-registration successful. You will get an email notification if selected. Please check your inbox (including Spam/Junk) within 10 minutes. Link expires in ${expiryHours} hours.`,
     );
   } catch (err) {
     next(err);
   }
 };
-
 // Verify invitation
 exports.verifyInvitation = async (req, res, next) => {
   try {
@@ -91,14 +125,21 @@ exports.verifyInvitation = async (req, res, next) => {
     // Skip validation here, course will be set later
     await user.save({ validateBeforeSave: false });
     await recordAudit({
-      userId: user._id,
-      action: "VERIFY_INVITATION",
-      details: "Invitation verified",
-      req,
-      status: "success",
-      resourceId: user._id,
-      resourceType: "User",
-    });
+  userId: user._id,
+  action: "VERIFY_INVITATION",
+  details: `Invitation verified for ${user.email}`,
+  req,
+  status: "success",
+  resourceId: user._id,
+  resourceType: "User",
+  metadata: {
+    email: user.email,
+    discipline: user.discipline,
+    expertiseLevel: user.expertiseLevel,
+    cohort: user.cohort || "Phase 1 - 2026",
+  },
+});
+
 
     await enqueueWelcomeEmail(user.email);
 
@@ -123,25 +164,35 @@ exports.completeRegistration = async (req, res, next) => {
     user.preRegistered = false;
     await user.save({ validateBeforeSave: false });
 
-    await recordAudit({
-      userId: user._id,
-      action: "COMPLETE_REGISTRATION",
-      details: "User set password",
-      req,
-      status: "success",
-      resourceId: user._id,
-      resourceType: "User",
-    });
+   await recordAudit({
+  userId: user._id,
+  action: "COMPLETE_REGISTRATION",
+  details: `Registration completed for ${user.email}`,
+  req,
+  status: "success",
+  resourceId: user._id,
+  resourceType: "User",
+  metadata: {
+    email: user.email,
+    discipline: user.discipline,
+    expertiseLevel: user.expertiseLevel,
+    portfolioUrl: user.portfolioUrl,
+    githubOrLinkedIn: user.githubOrLinkedIn,
+    cohort: user.cohort || "Phase 2 - 2026",
+  },
+});
+
     return success(res, user, "Registration completed successfully");
   } catch (err) {
     next(err);
   }
 };
 
-// LOGIN
+/// LOGIN
 exports.login = async (req, res, next) => {
   try {
-    const { email, password, provider } = req.body;
+    // Default provider to "local" if not provided
+    const { email, password, provider = "local" } = req.body;
 
     const user = await User.findOne({ email, provider }).notDeleted();
     if (!user) throw new ApiError(404, "User not found");
@@ -162,16 +213,26 @@ exports.login = async (req, res, next) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    
     await recordAudit({
-      userId: user._id,
-      action: "LOGIN",
-      details: "User logged in",
-      req,
-      status: "success",
-      resourceId: user._id,
-      resourceType: "User",
-      metadata: { provider },
-    });
+  userId: user._id,
+  action: "LOGIN",
+  details: `Student logged in: ${user.email}`,
+  req,
+  status: "success",
+  resourceId: user._id,
+  resourceType: "User",
+  metadata: {
+    email: user.email,
+    discipline: user.discipline,
+    expertiseLevel: user.expertiseLevel,
+    course: user.course,
+    studentId: user.studentId,
+    cohort: user.cohort || "Phase 1 - 2026",
+    provider,
+  },
+});
+
 
     return success(res, { user, accessToken }, "Login successful");
   } catch (err) {
@@ -182,29 +243,31 @@ exports.login = async (req, res, next) => {
 exports.googleUserInstructorLogin = async (req, res, next) => {
   try {
     if (!req.user)
-      throw new ApiError(
-        403,
-        "Please verify your invitation before logging in",
-      );
+      throw new ApiError(403, "Please verify your invitation before logging in");
 
     const { user, token } = req.user;
 
-    if (!["student", "instructor"].includes(user.role)) {
-      throw new ApiError(
-        403,
-        "Google login restricted to students/instructors here",
-      );
+    if (user.role !== "student") {
+      throw new ApiError(403, "Google login restricted to students here");
     }
 
+    
     await recordAudit({
       userId: user._id,
       action: "USER_GOOGLE_LOGIN",
-      details: `${user.role} logged in via Google`,
+      details: `Student logged in via Google: ${user.email}`,
       req,
       status: "success",
       resourceId: user._id,
       resourceType: "User",
-      metadata: { provider: "google", role: user.role },
+      metadata: {
+        email: user.email,
+        discipline: user.discipline,
+        expertiseLevel: user.expertiseLevel,
+        course: user.course,
+        studentId: user.studentId,
+        provider: "google",
+      },
     });
 
     return success(res, { user, token }, "Google login successful");
@@ -212,6 +275,7 @@ exports.googleUserInstructorLogin = async (req, res, next) => {
     next(err);
   }
 };
+
 
 // REFRESH TOKEN
 exports.refreshToken = async (req, res, next) => {
@@ -247,7 +311,7 @@ exports.refreshToken = async (req, res, next) => {
   }
 };
 
-// FORGOT PASSWORD
+//FORGOT PASSWORD
 exports.forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -256,18 +320,28 @@ exports.forgotPassword = async (req, res, next) => {
 
     const resetToken = generateAccessToken({ id: user._id });
     user.resetToken = resetToken;
-    user.resetTokenExpiry = new Date(Date.now() + 3600000);
+    user.resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
     await user.save();
 
-    await recordAudit({
-      userId: user._id,
-      action: "FORGOT_PASSWORD",
-      details: "Reset token generated",
-      req,
-      status: "success",
-      resourceId: user._id,
-      resourceType: "User",
-    });
+    
+   await recordAudit({
+  userId: user._id,
+  action: "FORGOT_PASSWORD",
+  details: `Password reset requested for ${user.email}`,
+  req,
+  status: "success",
+  resourceId: user._id,
+  resourceType: "User",
+  metadata: {
+    email: user.email,
+    discipline: user.discipline,
+    expertiseLevel: user.expertiseLevel,
+    course: user.course,
+    studentId: user.studentId,
+    cohort: user.cohort || "Phase 1 - 2026",
+  },
+});
+
 
     return success(res, { resetToken }, "Password reset token generated");
   } catch (err) {
@@ -282,11 +356,7 @@ exports.resetPassword = async (req, res, next) => {
     const decoded = verifyToken(token);
 
     const user = await User.findById(decoded.id);
-    if (
-      !user ||
-      user.resetToken !== token ||
-      user.resetTokenExpiry < Date.now()
-    ) {
+    if (!user || user.resetToken !== token || user.resetTokenExpiry < Date.now()) {
       throw new ApiError(400, "Invalid or expired token");
     }
 
@@ -296,59 +366,53 @@ exports.resetPassword = async (req, res, next) => {
     await user.save();
 
     await recordAudit({
-      userId: user._id,
-      action: "RESET_PASSWORD",
-      details: "Password reset",
-      req,
-      status: "success",
-      resourceId: user._id,
-      resourceType: "User",
-    });
+  userId: user._id,
+  action: "RESET_PASSWORD",
+  details: `Password reset completed for ${user.email}`,
+  req,
+  status: "success",
+  resourceId: user._id,
+  resourceType: "User",
+  metadata: {
+    email: user.email,
+    discipline: user.discipline,
+    expertiseLevel: user.expertiseLevel,
+    course: user.course,
+    studentId: user.studentId,
+    cohort: user.cohort || "Phase 1 - 2026",
+  },
+});
+
 
     return success(res, null, "Password reset successful");
   } catch (err) {
     next(err);
   }
 };
-// PROFILE (example protected route)
-exports.profile = async (req, res, next) => {
-  try {
-    const user = await User.findById(req.user.id).notDeleted();
-    if (!user) throw new ApiError(404, "User not found");
 
-    await recordAudit({
-      userId: user._id,
-      action: "PROFILE_VIEW",
-      details: "Profile fetched",
-      req,
-      status: "success",
-      resourceId: user._id,
-      resourceType: "User",
-    });
-    return success(res, user, "Profile fetched successfully");
-  } catch (err) {
-    next(err);
-  }
-};
-
-const generateStudentId = async (course) => {
+const generateStudentId = async (discipline) => {
   const year = new Date().getFullYear();
-  const courseMap = {
+  const disciplineMap = {
     backend: "BE",
-    cybersecurity: "CS",
     frontend: "FE",
-    productdesign: "PD",
+    uiux: "UX",
+    graphicdesign: "GD",
+    socialmedia: "SM",
+    cybersecurity: "CS",
   };
-  const prefix = courseMap[course];
-  const count = await User.countDocuments({ course });
-  const number = String(count + 1).padStart(3, "0");
-  return `FA/${year}/${number}/${prefix}COHORT01`;
-};
 
-// STUDENT PROFILE COMPLETION
+  const prefix = disciplineMap[discipline];
+  if (!prefix) throw new Error("Invalid discipline for student ID");
+
+  // Count students in this discipline for sequential numbering
+  const count = await User.countDocuments({ discipline });
+  const number = String(count + 1).padStart(4, "0"); // e.g., 1906
+
+  return `FA-${year}-${prefix}-${number}`;
+};
 exports.completeStudentProfile = async (req, res, next) => {
   try {
-    const { course } = req.body;
+    const { course, profilePhoto } = req.body;
     const user = await User.findById(req.user.id);
 
     if (!user.isVerified) throw new ApiError(403, "Verify your email first");
@@ -358,18 +422,27 @@ exports.completeStudentProfile = async (req, res, next) => {
 
     user.course = course;
     user.studentId = await generateStudentId(course);
+    user.profilePhoto = profilePhoto || user.profilePhoto; // NEW
 
     await user.save();
 
     await recordAudit({
       userId: user._id,
       action: "COMPLETE_STUDENT_PROFILE",
-      details: `Student profile completed with course ${course}`,
+      details: `Student profile completed: ${user.course}, ID ${user.studentId}`,
       req,
       status: "success",
       resourceId: user._id,
       resourceType: "User",
-      metadata: { course },
+      metadata: {
+        email: user.email,
+        course: user.course,
+        studentId: user.studentId,
+        discipline: user.discipline,
+        expertiseLevel: user.expertiseLevel,
+        cohort: user.cohort,
+        profilePhoto: user.profilePhoto, // NEW
+      },
     });
 
     return success(res, user, "Student profile completed successfully");
@@ -378,41 +451,142 @@ exports.completeStudentProfile = async (req, res, next) => {
   }
 };
 
-// MENTOR PROFILE COMPLETION
+// PROFILE
+exports.profile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).notDeleted();
+    if (!user) throw new ApiError(404, "User not found");
+
+    await recordAudit({
+      userId: user._id,
+      action: "PROFILE_VIEW",
+      details: `Profile viewed for ${user.email}`,
+      req,
+      status: "success",
+      resourceId: user._id,
+      resourceType: "User",
+      metadata: {
+        email: user.email,
+        discipline: user.discipline,
+        expertiseLevel: user.expertiseLevel,
+        course: user.course,
+        studentId: user.studentId,
+        cohort: user.cohort,
+      },
+    });
+
+    return success(res, user, "Profile retrieved successfully");
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Mentor profile completion
 exports.completeMentorProfile = async (req, res, next) => {
   try {
-    const { bio, linkedIn, phoneNumber, roleTitle } = req.body;
-    const user = await User.findById(req.user.id);
+    const {
+      bio,
+      roleTitle,
+      linkedIn,
+      phoneNumber,
+      profilePhoto,
+      availability,
+    } = req.body;
 
-    if (!user.isVerified) throw new ApiError(403, "Verify your email first");
-    if (user.role !== "instructor")
-      throw new ApiError(
-        403,
-        "Only mentors/instructors can complete this profile",
-      );
+    // Ensure only instructors can complete mentor profile
+    if (req.user.role !== "instructor") {
+      throw new ApiError(403, "Only instructors can complete mentor profile");
+    }
 
-    if (!bio) throw new ApiError(400, "Short bio is required");
-    if (!roleTitle) throw new ApiError(400, "Role title is required");
+    const user = await User.findById(req.user.id).notDeleted();
+    if (!user) throw new ApiError(404, "Mentor not found");
 
     user.bio = bio;
-    user.linkedIn = linkedIn;
-    user.phoneNumber = phoneNumber;
     user.roleTitle = roleTitle;
+    user.linkedIn = linkedIn || user.linkedIn;
+    user.phoneNumber = phoneNumber || user.phoneNumber;
+    user.profilePhoto = profilePhoto || user.profilePhoto;
+    user.availability =
+      availability !== undefined ? availability : user.availability;
+
+    await user.save();
+
+    // Audit log
+    await recordAudit({
+      userId: user._id,
+      action: "COMPLETE_MENTOR_PROFILE",
+      details: "Mentor completed profile",
+      req,
+      status: "success",
+      resourceId: user._id,
+      resourceType: "User",
+      metadata: { role: "instructor" },
+    });
+
+    return success(res, { user }, "Mentor profile completed successfully");
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const { bio, roleTitle, linkedIn, phoneNumber, profilePhoto, availability, course } = req.body;
+
+    const user = await User.findById(req.user.id).notDeleted();
+    if (!user) throw new ApiError(404, "User not found");
+
+    if (user.role === "student") {
+      if (course) user.course = course;
+      if (profilePhoto) user.profilePhoto = profilePhoto;
+    }
+
+    if (user.role === "instructor") {
+      if (bio) user.bio = bio;
+      if (roleTitle) user.roleTitle = roleTitle;
+      if (linkedIn) user.linkedIn = linkedIn;
+      if (phoneNumber) user.phoneNumber = phoneNumber;
+      if (profilePhoto) user.profilePhoto = profilePhoto;
+      if (availability !== undefined) user.availability = availability;
+    }
 
     await user.save();
 
     await recordAudit({
       userId: user._id,
-      action: "COMPLETE_MENTOR_PROFILE",
-      details: "Mentor profile completed",
+      action: "UPDATE_PROFILE",
+      details: `${user.role} updated profile`,
       req,
       status: "success",
       resourceId: user._id,
       resourceType: "User",
-      metadata: { roleTitle },
+      metadata: { role: user.role },
     });
 
-    return success(res, user, "Instructor profile completed successfully");
+    return success(res, user, "Profile updated successfully");
+  } catch (err) {
+    next(err);
+  }
+};
+exports.deleteProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).notDeleted();
+    if (!user) throw new ApiError(404, "User not found");
+
+    await User.softDelete(user._id);
+
+    await recordAudit({
+      userId: user._id,
+      action: "DELETE_PROFILE",
+      details: `${user.role} deleted profile`,
+      req,
+      status: "success",
+      resourceId: user._id,
+      resourceType: "User",
+      metadata: { role: user.role },
+    });
+
+    return success(res, null, "Profile deleted successfully");
   } catch (err) {
     next(err);
   }
@@ -423,14 +597,23 @@ exports.logout = async (req, res, next) => {
   try {
     res.clearCookie("refreshToken");
     await recordAudit({
-      userId: req.user?.id,
-      action: "LOGOUT",
-      details: "User logged out",
-      req,
-      status: "success",
-      resourceId: req.user?.id,
-      resourceType: "User",
-    });
+  userId: req.user?.id,
+  action: "LOGOUT",
+  details: `Student logged out: ${req.user?.email}`,
+  req,
+  status: "success",
+  resourceId: req.user?.id,
+  resourceType: "User",
+  metadata: {
+    email: req.user?.email,
+    discipline: req.user?.discipline,
+    expertiseLevel: req.user?.expertiseLevel,
+    course: req.user?.course,
+    studentId: req.user?.studentId,
+    cohort: req.user?.cohort || "Phase 1 - 2026",
+  },
+});
+
 
     return success(res, null, "Logout successful. Redirecting to login...");
   } catch (err) {
