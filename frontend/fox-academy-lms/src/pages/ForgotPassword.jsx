@@ -32,9 +32,10 @@ export default function ForgotPassword() {
       await requestPasswordReset({ email });
       navigate("/forgot-password/sent", { state: { email } });
     } catch (requestError) {
-      console.warn("API Error:", requestError);
-      // For testing purposes, navigate even if backend request fails
-      navigate("/forgot-password/sent", { state: { email } });
+      const message =
+        requestError?.response?.data?.message ||
+        "Unable to send reset link right now. Please try again.";
+      setApiError(message);
     } finally {
       setIsLoading(false);
     }

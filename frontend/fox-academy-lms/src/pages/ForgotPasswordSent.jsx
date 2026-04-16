@@ -74,6 +74,14 @@ export default function ForgotPasswordSent() {
         >
           Back to Log In
         </button>
+
+        <button
+          type="button"
+          onClick={() => navigate("/reset-password", { state: { email } })}
+          className="mt-2 w-full text-[14px] font-medium text-[#374151] transition hover:underline"
+        >
+          I already have a reset code
+        </button>
       </div>
     </div>
   );

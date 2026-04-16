@@ -1,13 +1,33 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import auth5 from "../assets/images/auth5.png";
 
 /**
  * Re-implemented Welcome page to exactly match the provided visual design.
  */
 const Welcome = () => {
+  const location = useLocation();
   const navigate = useNavigate();
+
+  const storedApplicant = (() => {
+    try {
+      const value = localStorage.getItem("applicantProfile");
+      return value ? JSON.parse(value) : {};
+    } catch (error) {
+      console.warn("Failed to parse applicantProfile from localStorage", error);
+      return {};
+    }
+  })();
+
+  const applicant = {
+    ...storedApplicant,
+    ...(location.state?.applicant || {}),
+  };
+
+  const firstName = applicant?.firstName || "Applicant";
+  const course = applicant?.course || "your selected program";
+  const duration = applicant?.duration || "the program timeline";
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-white px-4 py-12 md:py-16">
@@ -38,13 +58,13 @@ const Welcome = () => {
       {/* 3. Text & CTA Section */}
       <div className="flex flex-col items-center text-center">
         <h1 className="mb-4 text-3xl font-bold tracking-tight text-[#111827]">
-          Welcome to Fox Academy, Amara 👋
+          Welcome to Fox Academy, {firstName} 👋
         </h1>
 
         <p className="mb-8 max-w-[760px] text-lg leading-relaxed text-[#6B7280]">
-          You've officially joined the Phase 2 cohort as a UI/UX Design Intern. Phase 2 <br className="hidden md:block" />
-          runs from March 17th to June 10th — that's 85 days to learn, build, and deliver <br className="hidden md:block" />
-          alongside your team. Let's get you set up.
+          You&apos;ve officially joined the program as a {course}. Program duration: {duration}. <br className="hidden md:block" />
+          This journey is your chance to learn, build, and deliver alongside your team. <br className="hidden md:block" />
+          Let&apos;s get you set up.
         </p>
 
         <button

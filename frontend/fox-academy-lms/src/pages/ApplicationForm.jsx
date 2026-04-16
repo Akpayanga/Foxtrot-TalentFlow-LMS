@@ -17,12 +17,10 @@ const expertiseOptions = [
 ];
 
 const disciplineOptions = [
-  "UI/UX",
   "Frontend",
   "Backend",
-  "Data Science",
-  "Product Manager",
-  "Social Media",
+  "Product Design",
+  "Cybersecurity",
 ];
 
 function SectionHeading({ step, title }) {

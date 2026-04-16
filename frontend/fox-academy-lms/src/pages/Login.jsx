@@ -17,6 +17,25 @@ export default function Login() {
   const [apiError, setApiError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const buildApplicantProfile = (data) => {
+    const user = data?.user || data?.data?.user || data?.applicant || data?.data?.applicant || {};
+
+    return {
+      firstName: user?.firstName || user?.firstname || user?.name?.split(" ")?.[0] || "Applicant",
+      course:
+        user?.course ||
+        user?.track ||
+        user?.discipline ||
+        user?.primaryDiscipline ||
+        "your selected program",
+      duration:
+        user?.programDuration ||
+        user?.duration ||
+        user?.cohortDuration ||
+        "the program timeline",
+    };
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -46,13 +65,26 @@ export default function Login() {
       setIsLoading(true);
 
       try {
-        const data = await loginUser(formData);
+        const data = await loginUser({
+          email: formData.email,
+          password: formData.password,
+        });
 
-        if (data?.token) {
-          localStorage.setItem("authToken", data.token);
+        const authToken =
+          data?.token || data?.accessToken || data?.data?.token || data?.data?.accessToken;
+
+        if (authToken) {
+          localStorage.setItem("authToken", authToken);
         }
 
-        navigate("/welcome");
+        const applicantProfile = buildApplicantProfile(data);
+        localStorage.setItem("applicantProfile", JSON.stringify(applicantProfile));
+
+        navigate("/welcome", {
+          state: {
+            applicant: applicantProfile,
+          },
+        });
       } catch (error) {
         const message =
           error?.response?.data?.message ||

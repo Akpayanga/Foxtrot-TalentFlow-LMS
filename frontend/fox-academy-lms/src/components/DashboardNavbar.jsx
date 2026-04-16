@@ -2,12 +2,28 @@ import { Bell } from "lucide-react";
 import { useState } from "react";
 import amara from "../assets/images/amara.jpg";
 import foxLogo from "../assets/images/foxlogo.svg";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { logoutUser } from "../services/authService";
 
 export default function DashboardNavbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const handleLogout = async () => {
+    const token = localStorage.getItem("authToken");
+
+    try {
+      await logoutUser(token);
+    } catch (error) {
+      // Clear local auth state even if backend logout fails.
+      console.warn("Logout request failed", error);
+    } finally {
+      localStorage.removeItem("authToken");
+      navigate("/login");
+    }
+  };
 
   const navLinks = [
     { name: "Home", path: "/dashboard" },
@@ -105,7 +121,7 @@ export default function DashboardNavbar() {
                 <Link to="/certifications" className="hover:text-indigo-600 transition-colors">Certificate & Badges</Link>
                 <Link to="/settings" className="hover:text-indigo-600 transition-colors">Settings</Link>
                 <Link to="#" className="hover:text-indigo-600 transition-colors">Help center</Link>
-                <Link to="/" className="text-red-700 hover:text-red-800 transition-colors mt-2">Logout</Link>
+                <button type="button" onClick={handleLogout} className="text-left text-red-700 hover:text-red-800 transition-colors mt-2">Logout</button>
               </div>
 
             </div>

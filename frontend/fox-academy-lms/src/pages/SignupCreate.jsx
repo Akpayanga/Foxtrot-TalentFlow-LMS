@@ -2,16 +2,67 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import auth4 from "../assets/images/auth4.png";
+import { preRegisterUser } from "../services/authService";
 
 export default function SignupCreate() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [email, setEmail] = useState("");
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    acceptedTerms: false,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
-  const handleSubmit = (event) => {
+  const handleInputChange = (event) => {
+    const { name, value, type, checked } = event.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    navigate("/application");
+    setSubmitError("");
+
+    if (formData.password !== formData.confirmPassword) {
+      setSubmitError("Passwords do not match.");
+      return;
+    }
+
+    if (!formData.acceptedTerms) {
+      setSubmitError("You must accept the terms to continue.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await preRegisterUser({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      navigate("/verify-email", {
+        state: {
+          email: formData.email,
+        },
+      });
+    } catch (error) {
+      setSubmitError(
+        error?.response?.data?.message || "Signup failed. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -77,7 +128,11 @@ export default function SignupCreate() {
                     First Name
                   </label>
                   <input
+                    name="firstName"
                     type="text"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    required
                     placeholder="e.g. Amara"
                     className="w-full rounded-[10px] border border-[#D1D5DC] bg-[#F4F4F4] px-4 py-3 text-[13px] placeholder:text-[#99A1AF] focus:border-[#F38821] focus:outline-none"
                   />
@@ -87,7 +142,11 @@ export default function SignupCreate() {
                     Last Name
                   </label>
                   <input
+                    name="lastName"
                     type="text"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    required
                     placeholder="e.g. Okafor"
                     className="w-full rounded-[10px] border border-[#D1D5DC] bg-[#F4F4F4] px-4 py-3 text-[13px] placeholder:text-[#99A1AF] focus:border-[#F38821] focus:outline-none"
                   />
@@ -99,9 +158,10 @@ export default function SignupCreate() {
                   Email Address
                 </label>
                 <input
+                  name="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={formData.email}
+                  onChange={handleInputChange}
                   required
                   placeholder="e.g. amara@email.com"
                   className="w-full rounded-[10px] border border-[#D1D5DC] bg-[#F4F4F4] px-4 py-3 text-[13px] placeholder:text-[#99A1AF] focus:border-[#F38821] focus:outline-none"
@@ -115,7 +175,11 @@ export default function SignupCreate() {
                 </label>
                 <div className="relative">
                   <input
+                    name="password"
                     type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    required
                     placeholder="Minimum 8 characters"
                     className="w-full rounded-[10px] border border-[#D1D5DC] bg-[#F4F4F4] px-4 py-3 pr-11 text-[13px] placeholder:text-[#99A1AF] focus:border-[#F38821] focus:outline-none"
                   />
@@ -136,7 +200,11 @@ export default function SignupCreate() {
                 </label>
                 <div className="relative">
                   <input
+                    name="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    required
                     placeholder="Re-enter your password"
                     className="w-full rounded-[10px] border border-[#D1D5DC] bg-[#F4F4F4] px-4 py-3 pr-11 text-[13px] placeholder:text-[#99A1AF] focus:border-[#F38821] focus:outline-none"
                   />
@@ -154,7 +222,10 @@ export default function SignupCreate() {
 
               <label className="flex items-center gap-2 text-[13px] text-[#374151]">
                 <input
+                  name="acceptedTerms"
                   type="checkbox"
+                  checked={formData.acceptedTerms}
+                  onChange={handleInputChange}
                   className="h-4 w-4 rounded border border-[#D1D5DC] bg-[#F3F3F5] accent-[#F38821]"
                 />
                 <span>
@@ -166,11 +237,18 @@ export default function SignupCreate() {
                 </span>
               </label>
 
+              {submitError ? (
+                <p className="rounded-[8px] border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#B91C1C]">
+                  {submitError}
+                </p>
+              ) : null}
+
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="w-full rounded-[10px] bg-[#F38821] px-4 py-3 text-[16px] font-bold text-white transition hover:bg-[#e37b1d]"
               >
-                Create my Account
+                {isSubmitting ? "Creating Account..." : "Create my Account"}
               </button>
             </form>
           </div>

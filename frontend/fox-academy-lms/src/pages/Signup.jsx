@@ -1,24 +1,76 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import auth3 from "../assets/images/auth3.png";
+import { completeRegistration } from "../services/authService";
 
 export default function Signup() {
+  const location = useLocation();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [submitSuccess, setSubmitSuccess] = useState("");
+
+  const searchParams = new URLSearchParams(location.search);
+  const invitationCode =
+    searchParams.get("code") || searchParams.get("token") || searchParams.get("invitation") || "";
 
   // Temporary mock values representing data prefilled from backend application records.
-  const applicant = {
+  const fallbackApplicant = {
     fullName: "Amara Okoro",
     email: "amara@example.com",
     phone: "+234 000 000 0000",
     discipline: "UI/UX Design",
   };
 
-  const handleSubmit = (event) => {
+  const applicant = {
+    ...fallbackApplicant,
+    ...(location.state?.applicant || {}),
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    navigate("/verify-email");
+
+    setSubmitError("");
+    setSubmitSuccess("");
+
+    if (password !== confirmPassword) {
+      setSubmitError("Passwords do not match.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const payload = {
+        email: applicant.email,
+        password,
+        confirmPassword,
+      };
+
+      if (invitationCode) {
+        payload.code = invitationCode;
+      }
+
+      const response = await completeRegistration(payload);
+      setSubmitSuccess(response?.message || "Password set successfully. You can now sign in.");
+      navigate("/login", {
+        state: {
+          email: applicant.email,
+          fromRegistration: true,
+        },
+      });
+    } catch (error) {
+      setSubmitError(
+        error?.response?.data?.message || "Could not complete registration. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -117,6 +169,9 @@ export default function Signup() {
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    required
                     placeholder="Minimum 8 characters"
                     className="w-full rounded-[10px] border border-[#D1D5DC] bg-white px-4 py-3 pr-11 text-[13px] placeholder:text-[#99A1AF] focus:border-[#F38821] focus:outline-none"
                   />
@@ -138,6 +193,9 @@ export default function Signup() {
                 <div className="relative">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    required
                     placeholder="Re-enter your password"
                     className="w-full rounded-[10px] border border-[#D1D5DC] bg-white px-4 py-3 pr-11 text-[13px] placeholder:text-[#99A1AF] focus:border-[#F38821] focus:outline-none"
                   />
@@ -152,11 +210,24 @@ export default function Signup() {
                 </div>
               </div>
 
+              {submitError ? (
+                <p className="rounded-[8px] border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#B91C1C]">
+                  {submitError}
+                </p>
+              ) : null}
+
+              {submitSuccess ? (
+                <p className="rounded-[8px] border border-[#86EFAC] bg-[#F0FDF4] px-4 py-3 text-[13px] text-[#166534]">
+                  {submitSuccess}
+                </p>
+              ) : null}
+
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="w-full rounded-[10px] bg-[#F38821] px-4 py-3 text-[16px] font-bold text-white transition hover:bg-[#e37b1d]"
               >
-                Create My Account
+                {isSubmitting ? "Setting Password..." : "Create My Account"}
               </button>
             </form>
 

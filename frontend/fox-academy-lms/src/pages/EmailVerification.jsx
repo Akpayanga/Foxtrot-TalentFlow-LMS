@@ -1,12 +1,23 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Mail, Check } from "lucide-react";
+import { verifyInvitation } from "../services/authService";
 
 export default function EmailVerification() {
   const location = useLocation();
   const email = location.state?.email || "amara@email.com";
+  const searchParams = new URLSearchParams(location.search);
+  const invitationCodeFromUrl =
+    searchParams.get("code") ||
+    searchParams.get("token") ||
+    searchParams.get("invitation") ||
+    "";
   
   const [secondsLeft, setSecondsLeft] = useState(60);
+  const [invitationCode, setInvitationCode] = useState(invitationCodeFromUrl);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState("");
+  const [verifySuccess, setVerifySuccess] = useState("");
 
   useEffect(() => {
     if (secondsLeft > 0) {
@@ -16,6 +27,39 @@ export default function EmailVerification() {
   }, [secondsLeft]);
 
   const canResend = secondsLeft === 0;
+
+  const handleVerify = async () => {
+    if (!invitationCode.trim()) {
+      setVerifyError("Enter your invitation code to verify your email.");
+      setVerifySuccess("");
+      return;
+    }
+
+    setVerifyError("");
+    setVerifySuccess("");
+    setIsVerifying(true);
+
+    try {
+      const response = await verifyInvitation({ code: invitationCode.trim(), email });
+      setVerifySuccess(response?.message || "Email verified successfully.");
+    } catch (error) {
+      setVerifyError(
+        error?.response?.data?.message || "Verification failed. Please check the code and try again."
+      );
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!invitationCodeFromUrl) {
+      return;
+    }
+
+    handleVerify();
+    // Auto-verify only once when a code is present in the URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleResend = () => {
     if (canResend) {
@@ -57,6 +101,38 @@ export default function EmailVerification() {
         <p className="text-[13px] text-[#6B7280] mb-6">
           The link expires in 24 hours.
         </p>
+
+        <div className="mb-6 space-y-3 text-left">
+          <label className="block text-[13px] font-medium text-[#111827]">
+            Invitation Code
+          </label>
+          <input
+            type="text"
+            value={invitationCode}
+            onChange={(event) => setInvitationCode(event.target.value)}
+            placeholder="Paste invitation code"
+            className="w-full rounded-[10px] border border-[#D1D5DC] bg-white px-4 py-3 text-[14px] text-[#111827] placeholder:text-[#99A1AF] focus:border-[#F38821] focus:outline-none"
+          />
+          <button
+            onClick={handleVerify}
+            disabled={isVerifying}
+            className="w-full rounded-[10px] bg-[#F38821] px-4 py-3 text-[15px] font-semibold text-white transition hover:bg-[#e37b1d] disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {isVerifying ? "Verifying..." : "Verify Email"}
+          </button>
+
+          {verifyError ? (
+            <p className="rounded-[8px] border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 text-[13px] text-[#B91C1C]">
+              {verifyError}
+            </p>
+          ) : null}
+
+          {verifySuccess ? (
+            <p className="rounded-[8px] border border-[#86EFAC] bg-[#F0FDF4] px-3 py-2 text-[13px] text-[#166534]">
+              {verifySuccess}
+            </p>
+          ) : null}
+        </div>
 
         {/* Divider line */}
         <hr className="border-gray-100 mb-6" />

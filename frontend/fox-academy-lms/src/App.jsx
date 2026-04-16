@@ -5,6 +5,7 @@ import Signup from "./pages/Signup";
 import SignupCreate from "./pages/SignupCreate";
 import ForgotPassword from "./pages/ForgotPassword";
 import ForgotPasswordSent from "./pages/ForgotPasswordSent";
+import ResetPassword from "./pages/ResetPassword";
 import EmailVerification from "./pages/EmailVerification";
 import Welcome from "./pages/Welcome";
 import SetProfile from "./pages/SetProfile";
@@ -14,6 +15,7 @@ import OnboardingComplete from "./pages/OnboardingComplete";
 import ApplicationForm from "./pages/ApplicationForm";
 import ApplicationReceived from "./pages/ApplicationReceived";
 import WatchCourse from "./pages/WatchCourse";
+import CourseDetails from "./pages/CourseDetails";
 import MyProgress from './pages/Progress';
 import MyProgressNew from './pages/progressPhase2';
 import Dashboard from "./pages/Dashboard";
@@ -61,6 +63,7 @@ function App() {
         <Route path="/application/success/link/:token" element={<ApplicationReceived />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/forgot-password/sent" element={<ForgotPasswordSent />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/welcome" element={<Welcome />} />
         <Route path="/mentor/activate" element={<MentorActivate />} />
         <Route path="/mentor/setup" element={<MentorProfileSetup />} />
@@ -69,6 +72,7 @@ function App() {
         <Route path="/onboarding/learn" element={<LearnPreview />} />
         <Route path="/onboarding/complete" element={<OnboardingComplete />} />
         <Route path="/watch-course" element={<WatchCourse />} />
+        <Route path="/courses/:id" element={<CourseDetails />} />
         <Route path="/progress" element={<MyProgress />} />
         <Route path="/progressNew" element={<MyProgressNew />} />
         <Route path="/overview" element={<Phase2overview />} />

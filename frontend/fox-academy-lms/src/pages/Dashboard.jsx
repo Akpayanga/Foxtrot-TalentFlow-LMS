@@ -3,6 +3,8 @@ import DashboardSidebar from "../components/DashboardSidebar";
 import { WelcomeBanner, CapstoneProjectCard } from "../components/DashboardContent";
 import CourseCard from "../components/CourseCard";
 import { ChevronRight } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { listAllCourses } from "../services/courseService";
 
 // Importing demo images
 import auth1 from "../assets/images/auth1.png";
@@ -10,30 +12,51 @@ import auth2 from "../assets/images/auth2.png";
 import auth3 from "../assets/images/auth3.png";
 
 export default function Dashboard() {
-  const activeCourses = [
-    {
-      thumbnail: auth1,
-      category: "USER RESEARCH",
-      title: "Conduct UX Research and Test Early Concepts",
-      progress: 98,
-      isUnlocked: true,
-    },
-    {
-      thumbnail: auth2,
-      category: "FUNDAMENTALS",
-      title: "Foundation of UI/UX Design",
-      progress: 2,
-      isUnlocked: true,
-    },
-    {
-      thumbnail: auth3,
-      category: "DESIGN THEORY",
-      title: "Visual Design Essentials",
-      progress: 0,
-      isUnlocked: false,
-      unlockMessage: "Unlocks in Week 4",
-    },
-  ];
+  const [courses, setCourses] = useState([]);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
+  const [coursesError, setCoursesError] = useState("");
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      setCoursesError("");
+      setIsLoadingCourses(true);
+
+      try {
+        const response = await listAllCourses();
+        const courseList = response?.data || response?.courses || response || [];
+        setCourses(Array.isArray(courseList) ? courseList : []);
+      } catch (error) {
+        const message =
+          error?.response?.data?.message ||
+          "Could not load courses right now. Please try again.";
+        setCoursesError(message);
+      } finally {
+        setIsLoadingCourses(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  const activeCourses = useMemo(() => {
+    const fallbackThumbnails = [auth1, auth2, auth3];
+
+    return courses.map((course, index) => {
+      const courseId = course?.id || course?._id || course?.courseId || String(index + 1);
+      const progress = Number(course?.progressPercent || course?.progress || 0);
+      const isUnlocked = course?.isUnlocked !== false;
+
+      return {
+        id: courseId,
+        thumbnail: course?.thumbnail || course?.image || fallbackThumbnails[index % fallbackThumbnails.length],
+        category: course?.category || course?.track || course?.discipline || "COURSE",
+        title: course?.title || course?.name || "Untitled Course",
+        progress,
+        isUnlocked,
+        unlockMessage: course?.unlockMessage || "Locked",
+      };
+    });
+  }, [courses]);
 
   return (
     <div className="min-h-screen bg-[#FDFDFD]">
@@ -56,9 +79,33 @@ export default function Dashboard() {
               </div>
 
               <div className="grid gap-4">
-                {activeCourses.map((course, idx) => (
-                  <CourseCard key={idx} {...course} />
-                ))}
+                {isLoadingCourses ? (
+                  <p className="rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#6B7280]">
+                    Loading courses...
+                  </p>
+                ) : null}
+
+                {coursesError ? (
+                  <p className="rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm text-[#B91C1C]">
+                    {coursesError}
+                  </p>
+                ) : null}
+
+                {!isLoadingCourses && !coursesError && activeCourses.length === 0 ? (
+                  <p className="rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#6B7280]">
+                    No courses available yet.
+                  </p>
+                ) : null}
+
+                {!isLoadingCourses && !coursesError
+                  ? activeCourses.map((course) => (
+                      <CourseCard
+                        key={course.id}
+                        {...course}
+                        to={`/courses/${course.id}`}
+                      />
+                    ))
+                  : null}
               </div>
             </div>
 

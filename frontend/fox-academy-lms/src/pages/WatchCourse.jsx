@@ -1,8 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronRight, Play, FileText, Download, Maximize, CheckCircle2 } from 'lucide-react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import AppNavbar from '../components/AppNavbar';
 import { coursesData, userProgress } from '../data/courses';
+import {
+  checkCourseProgress,
+  markLectureViewed,
+  resetCourseProgress,
+} from '../services/courseProgressService';
 
 export default function WatchCourse() {
   const { courseId, moduleId } = useParams();
@@ -12,13 +17,77 @@ export default function WatchCourse() {
   const activeModuleId = moduleId || "m2";
 
   const course = coursesData[activeCourseId];
-  const progress = userProgress[activeCourseId];
+  const fallbackProgress = userProgress[activeCourseId] || {
+    completedModules: [],
+    progressPercent: 0,
+  };
+  const [progressData, setProgressData] = useState(null);
+  const [progressError, setProgressError] = useState('');
+  const [progressMessage, setProgressMessage] = useState('');
+  const [isProgressLoading, setIsProgressLoading] = useState(true);
+  const [isMarkingViewed, setIsMarkingViewed] = useState(false);
+  const [isResettingProgress, setIsResettingProgress] = useState(false);
+
+  const progress = useMemo(() => {
+    const apiPayload = progressData?.data || progressData?.progress || progressData || {};
+    const completedModules =
+      apiPayload?.completedModules ||
+      apiPayload?.completedLectures ||
+      apiPayload?.viewedLectures ||
+      [];
+
+    return {
+      completedModules: Array.isArray(completedModules)
+        ? completedModules.map((item) => {
+            if (typeof item === 'string') {
+              return item;
+            }
+            return item?.id || item?._id || item?.lectureId || item?.moduleId;
+          })
+        : fallbackProgress.completedModules,
+      progressPercent: Number(
+        apiPayload?.progressPercent ||
+          apiPayload?.completion ||
+          apiPayload?.overallProgress ||
+          fallbackProgress.progressPercent ||
+          0
+      ),
+    };
+  }, [progressData, fallbackProgress]);
+
+  const fetchProgress = async () => {
+    setProgressError('');
+    setProgressMessage('');
+    setIsProgressLoading(true);
+
+    try {
+      const data = await checkCourseProgress(activeCourseId);
+      setProgressData(data);
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ||
+        'Could not load course progress right now. Showing fallback progress.';
+      setProgressError(message);
+      setProgressData(null);
+    } finally {
+      setIsProgressLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!course) {
       navigate('/dashboard');
     }
   }, [course, navigate]);
+
+  useEffect(() => {
+    if (!course) {
+      return;
+    }
+
+    fetchProgress();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCourseId, course]);
 
   if (!course) return null;
 
@@ -37,6 +106,51 @@ export default function WatchCourse() {
   const handlePrev = () => {
     if (hasPrev) {
       navigate(`/course/${activeCourseId}/module/${course.modules[currentModuleIndex - 1].id}`);
+    }
+  };
+
+  const handleMarkAsViewed = async () => {
+    setProgressError('');
+    setProgressMessage('');
+    setIsMarkingViewed(true);
+
+    try {
+      const response = await markLectureViewed({
+        courseId: activeCourseId,
+        lectureId: activeModule.id,
+      });
+
+      setProgressMessage(response?.message || 'Lecture marked as viewed.');
+      await fetchProgress();
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ||
+        'Could not mark lecture as viewed. Please try again.';
+      setProgressError(message);
+    } finally {
+      setIsMarkingViewed(false);
+    }
+  };
+
+  const handleResetProgress = async () => {
+    setProgressError('');
+    setProgressMessage('');
+    setIsResettingProgress(true);
+
+    try {
+      const response = await resetCourseProgress({
+        courseId: activeCourseId,
+      });
+
+      setProgressMessage(response?.message || 'Course progress reset successfully.');
+      await fetchProgress();
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ||
+        'Could not reset progress. Please try again.';
+      setProgressError(message);
+    } finally {
+      setIsResettingProgress(false);
     }
   };
 
@@ -110,6 +224,38 @@ export default function WatchCourse() {
             </p>
           </div>
 
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleMarkAsViewed}
+              disabled={isMarkingViewed}
+              className="rounded-lg bg-[#F38821] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#E37A1D] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isMarkingViewed ? 'Marking...' : 'Mark as Viewed'}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleResetProgress}
+              disabled={isResettingProgress}
+              className="rounded-lg border border-[#F38821] px-4 py-2 text-sm font-semibold text-[#F38821] transition hover:bg-[#FFF7ED] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isResettingProgress ? 'Resetting...' : 'Start Over'}
+            </button>
+          </div>
+
+          {progressError ? (
+            <p className="rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm text-[#B91C1C]">
+              {progressError}
+            </p>
+          ) : null}
+
+          {progressMessage ? (
+            <p className="rounded-lg border border-[#86EFAC] bg-[#F0FDF4] px-4 py-3 text-sm text-[#166534]">
+              {progressMessage}
+            </p>
+          ) : null}
+
           <hr className="border-[#E5E7EB] my-2" />
 
           {activeModule.resources && activeModule.resources.length > 0 && (
@@ -173,7 +319,7 @@ export default function WatchCourse() {
               </div>
             </div>
             <span className="text-[32px] font-bold text-[#4F46E5] leading-none">
-              {String(progress?.progressPercent || 0).padStart(2, '0')}%
+              {isProgressLoading ? '...' : `${String(progress?.progressPercent || 0).padStart(2, '0')}%`}
             </span>
           </div>
 
