@@ -50,6 +50,9 @@ router.post(
   authController.resetPassword,
 );
 
+// Admin passcode login route
+router.post("/admin-passcode-login", adminAuthController.adminPasscodeLogin);
+
 router.get(
   "/google",
   passport.authenticate("google-admin", { scope: ["profile", "email"] }),

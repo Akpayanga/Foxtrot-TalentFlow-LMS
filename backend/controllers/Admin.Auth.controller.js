@@ -129,6 +129,35 @@ exports.googleAdminLogin = async (req, res, next) => {
     next(err);
   }
 };
+// ADMIN PASSCODE LOGIN
+exports.adminPasscodeLogin = async (req, res, next) => {
+  try {
+    const { passcode } = req.body;
+
+    // Compare with passcode stored in .env
+    if (passcode !== process.env.ADMIN_PASSCODE) {
+      throw new ApiError(401, "Invalid admin passcode");
+    }
+
+    // If passcode matches, issue a temporary access token
+    const accessToken = generateAccessToken({ role: "admin-passcode" });
+
+    await recordAudit({
+      userId: null, // no specific user record tied to this
+      action: "ADMIN_PASSCODE_LOGIN",
+      details: "Admin accessed dashboard via passcode",
+      req,
+      status: "success",
+      resourceId: null,
+      resourceType: "System",
+      metadata: { method: "passcode" },
+    });
+
+    return success(res, { accessToken }, "Admin passcode login successful");
+  } catch (err) {
+    next(err);
+  }
+};
 
 exports.adminLogin = async (req, res, next) => {
   try {
