@@ -59,31 +59,162 @@ exports.listInterns = async (req, res, next) => {
 
     const students = await User.find(query);
     
+    let onTrack = 0;
+    let atRisk = 0;
+    let inactive = 0;
+    let totalPhase1Progress = 0;
+
+    const disciplineCounts = {};
+
     const internsWithStats = await Promise.all(students.map(async (s) => {
       const enrollment = await Enrollment.findOne({ userId: s._id });
       
-      // Determine status label based on progress and activity
-      let statusLabel = "ON TRACK";
+      // Track discipline counts
+      const courseName = s.course || "General";
+      disciplineCounts[courseName] = (disciplineCounts[courseName] || 0) + 1;
+
+      let statusLabel = "AT RISK";
+      let progress = 0;
+      let lastActive = "Never";
+
       if (enrollment) {
+        progress = enrollment.progressPercentage || 0;
+        totalPhase1Progress += progress;
+        lastActive = enrollment.lastAccessed;
+        
         const daysSinceLastAccess = (Date.now() - new Date(enrollment.lastAccessed)) / (1000 * 60 * 60 * 24);
-        if (enrollment.progressPercentage < 45) statusLabel = "AT RISK";
-        if (daysSinceLastAccess > 7) statusLabel = "WARNING";
+        if (progress >= 60 && daysSinceLastAccess <= 3) {
+          statusLabel = "ON TRACK";
+          onTrack++;
+        } else if (daysSinceLastAccess > 7) {
+          statusLabel = "INACTIVE";
+          inactive++;
+        } else {
+          statusLabel = "AT RISK";
+          atRisk++;
+        }
+      } else {
+        atRisk++; // Students with no enrollment are at risk
       }
+
+      // Try to find assigned mentor name
+      const sub = await Submission.findOne({ userId: s._id }).populate("mentorId", "firstName lastName");
+      const mentorName = sub && sub.mentorId ? `${sub.mentorId.firstName} ${sub.mentorId.lastName}` : "Assignee Needed";
 
       return {
         _id: s._id,
         name: `${s.firstName} ${s.lastName}`,
         studentId: s.studentId || "N/A",
-        discipline: s.course || "General",
-        mentor: "Assigned Mentor", // Placeholder
-        progress: enrollment ? enrollment.progressPercentage : 0,
-        lastActive: enrollment ? "Recent" : "Never",
+        discipline: courseName,
+        mentor: mentorName,
+        progress,
+        lastActive,
         status: statusLabel,
         avatar: ""
       };
     }));
 
-    return success(res, internsWithStats, "Interns list fetched successfully");
+    const avgPhase1 = students.length > 0 ? Math.round(totalPhase1Progress / students.length) : 0;
+
+    const responsePayload = {
+      headerStats: {
+        totalInterns: students.length,
+        onTrack,
+        atRisk,
+        inactive
+      },
+      progressBreakdown: {
+        phase1: avgPhase1,
+        phase2: 25, // Concept Mock
+        presentation: 10 // Concept Mock
+      },
+      byDiscipline: Object.keys(disciplineCounts).map(k => ({
+        name: k.charAt(0).toUpperCase() + k.slice(1),
+        count: disciplineCounts[k]
+      })),
+      interns: internsWithStats
+    };
+
+    return success(res, responsePayload, "Interns list fetched successfully");
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Retrieves a detailed profile for a specific Intern
+ */
+exports.getInternProfile = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const intern = await User.findById(id);
+    
+    if (!intern || intern.role !== "student") {
+      return next(new ApiError(404, "Intern not found"));
+    }
+
+    const enrollments = await Enrollment.find({ userId: id }).populate("courseId");
+    
+    // Determine overall phase 1 progress based on active enrollment
+    let mainProgress = 0;
+    let lastActive = null;
+    let status = "AT RISK";
+
+    if (enrollments.length > 0) {
+      const e = enrollments[0]; // Assuming phase 1 is primary for now
+      mainProgress = e.progressPercentage;
+      lastActive = e.lastAccessed;
+      
+      const days = (Date.now() - new Date(e.lastAccessed)) / (1000 * 60 * 60 * 24);
+      if (mainProgress >= 60 && days <= 3) status = "ON TRACK";
+      else if (days > 7) status = "INACTIVE";
+    }
+
+    // Assignments logic
+    const totalAssignments = await Assignment.countDocuments(); // In a real app, count assignments linked to their course
+    const completedAssignments = await Submission.countDocuments({ userId: id, status: { $in: ["submitted", "graded"]} });
+
+    // Course Progress Breakdown 
+    // Mapped from existing enrollments or mocked to fit UI design
+    const courseBreakdown = enrollments.map(e => ({
+      moduleName: e.courseId ? e.courseId.title : "Unknown Module",
+      progress: e.progressPercentage
+    }));
+
+    if (courseBreakdown.length === 0) {
+      courseBreakdown.push(
+        { moduleName: "Conduct UX Research", progress: 100 },
+        { moduleName: "Define User Persona", progress: 45 },
+        { moduleName: "Foundation Modules", progress: 2 }
+      );
+    }
+
+    const payload = {
+      header: {
+        name: `${intern.firstName} ${intern.lastName}`,
+        status,
+        avatar: "",
+        discipline: intern.course || "General",
+        cohort: "Cohort 3 (Winter 2024)",
+        phase1Progress: mainProgress,
+        assignments: `${completedAssignments}/${totalAssignments || 6}`,
+        lastActive
+      },
+      internInfo: {
+        name: `${intern.firstName} ${intern.lastName}`,
+        discipline: intern.course || "General",
+        cohort: "Cohort 3 (Winter 2024)",
+        enrollmentDate: intern.createdAt,
+        email: intern.email
+      },
+      courseProgress: courseBreakdown,
+      sessions: {
+        lastSession: { date: "JUN 12", title: "Portfolio Foundations" },
+        nextSession: { date: "TODAY", time: "2:00PM", platform: "Zoom Call" }
+      }
+    };
+
+    return success(res, payload, "Intern profile fetched");
   } catch (err) {
     next(err);
   }

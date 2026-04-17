@@ -7,5 +7,6 @@ const auth = require("../middleware/Auth.middle");
 
 router.get("/mentors", auth, managementController.listMentors);
 router.get("/interns", auth, managementController.listInterns);
+router.get("/interns/:id", auth, managementController.getInternProfile);
 
 module.exports = router;

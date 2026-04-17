@@ -112,7 +112,20 @@ exports.getDashboardData = async (req, res, next) => {
 exports.getAdminDashboardStats = async (req, res, next) => {
   try {
     const totalInterns = await User.countDocuments({ role: "student", deletedAt: null });
-    const totalMentors = await User.countDocuments({ role: "instructor", deletedAt: null });
+    
+    // Calculate new interns in the last 7 days
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const newInternsThisWeek = await User.countDocuments({ 
+      role: "student", 
+      deletedAt: null,
+      createdAt: { $gte: sevenDaysAgo }
+    });
+
+    const mentors = await User.find({ role: "instructor", deletedAt: null });
+    const totalMentors = mentors.length;
+    
+    // Count unique disciplines for mentors
+    const uniqueFields = new Set(mentors.map(m => m.course).filter(Boolean)).size;
     
     // Progress Snapshot logic
     const enrollments = await Enrollment.find().select("progressPercentage lastAccessed");
@@ -123,12 +136,12 @@ exports.getAdminDashboardStats = async (req, res, next) => {
     
     enrollments.forEach(e => {
       const daysSinceLastAccess = (Date.now() - new Date(e.lastAccessed)) / (1000 * 60 * 60 * 24);
-      if (e.progressPercentage > 65 && daysSinceLastAccess < 3) {
+      if (e.progressPercentage >= 60 && daysSinceLastAccess <= 3) {
         onTrack++;
-      } else if (e.progressPercentage < 30 || daysSinceLastAccess > 7) {
-        atRisk++;
-      } else if (daysSinceLastAccess > 14) {
+      } else if (daysSinceLastAccess > 7) {
         inactive++;
+      } else {
+        atRisk++; // Fallback for anyone not on track or completely inactive
       }
     });
 
@@ -137,16 +150,14 @@ exports.getAdminDashboardStats = async (req, res, next) => {
       ? Math.round(enrollments.reduce((acc, curr) => acc + curr.progressPercentage, 0) / enrollments.length)
       : 0;
 
-    // Mentor overview (top 4)
-    const mentors = await User.find({ role: "instructor" }).limit(4).select("firstName lastName course isActive");
-    // For now, mock assigned count and last active since link is missing
-    const mentorOverview = mentors.map(m => ({
-      name: `${m.firstName} ${m.lastName}`,
-      discipline: m.course || "General",
-      assignedInterns: Math.floor(Math.random() * 100), // Placeholder logic as per Figma
-      lastActive: "2h ago",
-      status: m.isActive ? "ACTIVE" : "INACTIVE"
-    }));
+    // Fetch an active course to represent the current cohort
+    const activeCourse = await Course.findOne({ phase: { $gte: 1 } });
+    const currentCohort = activeCourse ? {
+      name: activeCourse.title,
+      phase: activeCourse.phase,
+      category: activeCourse.category,
+      progress: avgCompletion // Approximated for now
+    } : null;
 
     // Activity feed (last 4 audit logs)
     const activityFeed = await AuditLog.find()
@@ -155,19 +166,35 @@ exports.getAdminDashboardStats = async (req, res, next) => {
       .populate("userId", "firstName lastName");
 
     const formattedFeed = activityFeed.map(log => ({
-      text: log.details || `${log.userId?.firstName} performed ${log.action}`,
+      text: log.details || `${log.userId?.firstName || 'System'} performed ${log.action}`,
       time: log.createdAt
     }));
 
     return success(res, {
-      stats: {
-        totalInterns,
-        totalMentors,
-        cohortStatus: "Cohort 3", // Mocked
-        completionRate: avgCompletion
+      adminOverview: {
+        totalInterns: {
+          count: totalInterns,
+          addedThisWeek: newInternsThisWeek
+        },
+        totalMentors: {
+          count: totalMentors,
+          fieldsCount: uniqueFields || 0
+        },
+        cohortStatus: {
+          name: activeCourse ? activeCourse.title : "No Active Cohort",
+          status: activeCourse ? "ACTIVE" : "INACTIVE"
+        },
+        courseCompletionRate: {
+          percentage: avgCompletion,
+          target: 75
+        }
       },
-      snapshot: { onTrack, atRisk, inactive },
-      mentorOverview,
+      internProgressSnapshot: {
+        onTrack,
+        atRisk,
+        inactive
+      },
+      currentCohort,
       activityFeed: formattedFeed
     }, "Admin dashboard stats fetched");
   } catch (err) {
@@ -176,7 +203,7 @@ exports.getAdminDashboardStats = async (req, res, next) => {
 };
 
 /**
- * Aggregates data for the specific Mentor Dashboard
+ * Aggregates data for the specific Mentor Dashboard (My Interns Overview)
  */
 exports.getMentorDashboardStats = async (req, res, next) => {
   try {
@@ -188,23 +215,63 @@ exports.getMentorDashboardStats = async (req, res, next) => {
     
     const assignedInternCount = uniqueStudentIds.length;
     
-    // Average progress of these students
-    const enrollments = await Enrollment.find({ userId: { $in: uniqueStudentIds } });
+    // Snapshot logic for these students
+    const enrollments = await Enrollment.find({ userId: { $in: uniqueStudentIds } }).populate('courseId');
+    
+    let onTrack = 0;
+    let atRisk = 0;
+    let inactive = 0;
+    
+    enrollments.forEach(e => {
+      const daysSinceLastAccess = (Date.now() - new Date(e.lastAccessed)) / (1000 * 60 * 60 * 24);
+      if (e.progressPercentage >= 60 && daysSinceLastAccess <= 3) {
+        onTrack++;
+      } else if (daysSinceLastAccess > 7) {
+        inactive++;
+      } else {
+        atRisk++; 
+      }
+    });
+
     const avgProgress = enrollments.length > 0
       ? Math.round(enrollments.reduce((acc, curr) => acc + curr.progressPercentage, 0) / enrollments.length)
       : 0;
 
-    return success(res, {
-      stats: {
-        assignedInterns: assignedInternCount,
-        avgProgress,
-        totalCapacity: 60, // Mocked
-        mentorshipSummary: {
-          design: 14,
-          engineering: 22,
-          dataAnalysis: 8
-        }
+    // Get assigned interns mapped properly
+    const assignedStudents = await User.find({ _id: { $in: uniqueStudentIds }});
+    const myInternsList = assignedStudents.map(student => {
+      const e = enrollments.find(e => e.userId.toString() === student._id.toString());
+      
+      let status = "AT RISK";
+      if (e) {
+        const days = (Date.now() - new Date(e.lastAccessed)) / (1000 * 60 * 60 * 24);
+        if (e.progressPercentage >= 60 && days <= 3) status = "ON TRACK";
+        else if (days > 7) status = "INACTIVE";
       }
+
+      return {
+        _id: student._id,
+        name: `${student.firstName} ${student.lastName}`,
+        discipline: student.course || "General",
+        cohort: e && e.courseId ? e.courseId.title : "Not Enrolled",
+        phase1Progress: e ? e.progressPercentage : 0,
+        lastActive: e ? e.lastAccessed : null,
+        status
+      };
+    });
+
+    return success(res, {
+      overview: {
+        assignedInterns: assignedInternCount,
+        cohortDisciplineLabel: req.user.course ? `${req.user.course} Discipline` : "General Support",
+        averageProgress: avgProgress,
+        menteeSnapshot: {
+          onTrack,
+          atRisk,
+          inactive
+        }
+      },
+      myInterns: myInternsList
     }, "Mentor dashboard stats fetched");
   } catch (err) {
     next(err);
