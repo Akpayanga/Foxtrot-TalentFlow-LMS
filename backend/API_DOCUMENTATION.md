@@ -1771,3 +1771,299 @@ This document provides full details on how to interact with the API endpoints. B
 ```
 
 ---
+## Community Forum
+
+### /api/v1/community/discussions
+
+**Endpoint:** `POST /api/v1/community/discussions`
+
+**Authentication Required:** Bearer Token
+
+**Request Body:**
+
+```json
+{
+  "title": "How to deploy to Heroku?",
+  "content": "I am having trouble deploying my backend...",
+  "channel": "backend",
+  "tags": ["deploy", "heroku"],
+  "attachments": []
+}
+```
+
+### /api/v1/community/discussions
+
+**Endpoint:** `GET /api/v1/community/discussions`
+
+**Authentication Required:** Bearer Token
+
+### /api/v1/community/discussions/:id
+
+**Endpoint:** `GET /api/v1/community/discussions/:id`
+
+**Authentication Required:** Bearer Token
+
+### /api/v1/community/discussions/:id/replies
+
+**Endpoint:** `POST /api/v1/community/discussions/:id/replies`
+
+**Authentication Required:** Bearer Token
+
+**Request Body:**
+
+```json
+{
+  "content": "You need to add a Procfile configuration."
+}
+```
+
+### /api/v1/community/resources/pinned
+
+**Endpoint:** `GET /api/v1/community/resources/pinned`
+
+**Authentication Required:** Bearer Token
+
+---
+
+## Bookings
+
+### /api/v1/bookings
+
+**Endpoint:** `POST /api/v1/bookings`
+
+**Authentication Required:** Bearer Token
+
+**Request Body:**
+
+```json
+{
+  "mentorId": "60d0fe4f5311236168a109ca",
+  "studentId": "60d0fe4f5311236168a109cb",
+  "date": "2026-04-20",
+  "time": "14:00",
+  "purpose": "Mentorship on backend architectural patterns"
+}
+```
+
+### /api/v1/bookings/mentor/:mentorId
+
+**Endpoint:** `GET /api/v1/bookings/mentor/:mentorId`
+
+**Authentication Required:** Bearer Token
+
+### /api/v1/bookings/student/:studentId
+
+**Endpoint:** `GET /api/v1/bookings/student/:studentId`
+
+**Authentication Required:** Bearer Token
+
+---
+
+## Applications
+
+### /api/v1/applications/submit
+
+**Endpoint:** `POST /api/v1/applications/submit`
+
+**Authentication Required:** None
+
+**Request Body:**
+
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "student@example.com",
+  "phoneNumber": "+1234567890",
+  "gender": "male",
+  "dateOfBirth": "2000-01-01",
+  "country": "Nigeria",
+  "stateOfResidence": "Lagos",
+  "lga": "Eti-Osa",
+  "address": "123 Main St",
+  "highestQualification": "BSc",
+  "institution": "University of Lagos",
+  "courseOfStudy": "Computer Science",
+  "graduationYear": 2022,
+  "employmentStatus": "Unemployed",
+  "techSkills": ["JavaScript", "Python"],
+  "track": "backend",
+  "whyJoin": "To improve my skills",
+  "howDidYouHear": "LinkedIn",
+  "portfolioUrl": "https://github.com/jhndoe",
+  "linkedInUrl": "https://linkedin.com/in/jhndoe"
+}
+```
+
+### /api/v1/applications/status/:email
+
+**Endpoint:** `GET /api/v1/applications/status/:email`
+
+**Authentication Required:** None
+
+---
+
+## Learning
+
+### /api/v1/learning
+
+**Endpoint:** `GET /api/v1/learning`
+
+**Authentication Required:** Bearer Token
+
+### /api/v1/learning/:courseId
+
+**Endpoint:** `GET /api/v1/learning/:courseId`
+
+**Authentication Required:** Bearer Token
+
+---
+
+## Course Progress
+
+### /api/v1/course-progress/get/:userId/:courseId
+
+**Endpoint:** `GET /api/v1/course-progress/get/:userId/:courseId`
+
+**Authentication Required:** Bearer Token
+
+### /api/v1/course-progress/mark-lecture-viewed
+
+**Endpoint:** `POST /api/v1/course-progress/mark-lecture-viewed`
+
+**Authentication Required:** Bearer Token
+
+**Request Body:**
+
+```json
+{
+  "userId": "60d0fe4f5311236168a109cb",
+  "courseId": "60d0fe4f5311236168a109cc",
+  "lectureId": "60d0fe4f5311236168a109cd"
+}
+```
+
+### /api/v1/course-progress/reset-progress
+
+**Endpoint:** `POST /api/v1/course-progress/reset-progress`
+
+**Authentication Required:** Bearer Token
+
+**Request Body:**
+
+```json
+{
+  "userId": "60d0fe4f5311236168a109cb",
+  "courseId": "60d0fe4f5311236168a109cc"
+}
+```
+
+---
+
+## Dashboard
+
+### /api/v1/dashboard
+
+**Endpoint:** `GET /api/v1/dashboard`
+
+**Authentication Required:** Bearer Token
+
+### /api/v1/dashboard/admin
+
+**Endpoint:** `GET /api/v1/dashboard/admin`
+
+**Authentication Required:** Admin Passcode Authorization
+
+### /api/v1/dashboard/mentor
+
+**Endpoint:** `GET /api/v1/dashboard/mentor`
+
+**Authentication Required:** Bearer Token (Mentor Role)
+
+---
+
+## Management
+
+### /api/v1/management/mentors
+
+**Endpoint:** `GET /api/v1/management/mentors`
+
+**Authentication Required:** Bearer Token
+
+### /api/v1/management/interns
+
+**Endpoint:** `GET /api/v1/management/interns`
+
+**Authentication Required:** Bearer Token
+
+### /api/v1/management/interns/:id
+
+**Endpoint:** `GET /api/v1/management/interns/:id`
+
+**Authentication Required:** Bearer Token
+
+---
+
+## Audit Logs
+
+### /api/v1/audit
+
+**Endpoint:** `GET /api/v1/audit`
+
+**Authentication Required:** Bearer Token (Admin Role)
+
+---
+
+## Notifications
+
+### /api/v1/notifications
+
+**Endpoint:** `GET /api/v1/notifications`
+
+**Authentication Required:** Bearer Token
+
+### /api/v1/notifications/read-notify
+
+**Endpoint:** `PUT /api/v1/notifications/read-notify`
+
+**Authentication Required:** Bearer Token
+
+**Request Body:**
+
+```json
+{
+  "notifyId": "60d0fe4f5311236168a109xx"
+}
+```
+
+---
+
+## Assignments
+
+### /api/v1/assignments
+
+**Endpoint:** `GET /api/v1/assignments`
+
+**Authentication Required:** Bearer Token
+
+### /api/v1/assignments/:id
+
+**Endpoint:** `GET /api/v1/assignments/:id`
+
+**Authentication Required:** Bearer Token
+
+### /api/v1/assignments/:id/submit
+
+**Endpoint:** `POST /api/v1/assignments/:id/submit`
+
+**Authentication Required:** Bearer Token
+
+**Request Body:**
+
+```json
+{
+  "fileUrl": "https://storage.provider.com/xyz.pdf",
+  "linkUrl": "https://github.com/my/project",
+  "mentorNote": "I used clean architecture."
+}
+```
