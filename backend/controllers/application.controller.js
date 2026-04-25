@@ -37,7 +37,6 @@ exports.submitApplication = async (req, res, next) => {
 
     const invitationCode = crypto.randomBytes(6).toString("hex").toUpperCase();
     const token = generateRefreshToken({ email });
-    let expiryHours = Number(process.env.INVITE_EXPIRY_HOURS_STUDENT) || 48; // Default expiry
 
     const application = await Application.create({
       fullName,
@@ -50,7 +49,7 @@ exports.submitApplication = async (req, res, next) => {
       githubLinkedin,
     });
 
-    await enqueueVerificationEmail(email, token, invitationCode, "student");
+    await enqueueVerificationEmail(application._id, email, token, invitationCode, "student");
 
     // Audit log
     await recordAudit({

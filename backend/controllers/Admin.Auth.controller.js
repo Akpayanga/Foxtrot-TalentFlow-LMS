@@ -9,7 +9,8 @@ const {
 const crypto = require("crypto");
 const {
   enqueueVerificationEmail,
-  enqueueWelcomeEmail,
+  enqueueWelcomeEmailAdmin,
+  enqueueWelcomeEmailStudent,
 } = require("../service/email.service");
 const { recordAudit } = require("../utilities/audit.util");
 
@@ -297,7 +298,7 @@ exports.adminInviteMentor = async (req, res, next) => {
       verificationTokenExpiry: Date.now() + expiryHours * 60 * 60 * 1000,
     });
 
-    await enqueueVerificationEmail(email, token, invitationCode, "instructor");
+    await enqueueVerificationEmail(user._id, email, token, invitationCode, "instructor");
 
     await recordAudit({
       userId: user._id,

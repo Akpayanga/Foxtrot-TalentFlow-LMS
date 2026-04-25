@@ -9,7 +9,10 @@ const {
 const crypto = require("crypto");
 const {
   enqueueVerificationEmail,
-  enqueueWelcomeEmail,
+  enqueueWelcomeEmailStudent,
+  enqueueWelcomeEmailMentor,
+  enqueueProfileCompletionEmailStudent,
+  enqueueProfileCompletionEmailMentor,
 } = require("../service/email.service");
 const { recordAudit } = require("../utilities/audit.util");
 
@@ -71,7 +74,7 @@ exports.preRegister = async (req, res, next) => {
       verificationTokenExpiry: Date.now() + expiryHours * 60 * 60 * 1000,
     });
 
-    await enqueueVerificationEmail(email, token, invitationCode, "student");
+    await enqueueVerificationEmail(user._id, email, token, invitationCode, "student");
 
     await recordAudit({
       userId: user._id,

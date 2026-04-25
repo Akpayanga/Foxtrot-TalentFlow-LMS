@@ -8,9 +8,9 @@ const {
 const crypto = require("crypto");
 const {
   enqueueVerificationEmail,
-  enqueueWelcomeEmail,
+  enqueueWelcomeEmailAdmin,
+  enqueueWelcomeEmailStudent,
 } = require("../service/email.service");
-const { sendVerificationEmail } = require("../utilities/email.util");
 const { recordAudit } = require("../utilities/audit.util");
 
 // ADMIN GOOGLE STRATEGY
@@ -48,7 +48,7 @@ passport.use(
             verificationTokenExpiry: Date.now() + 3600000, // 1 hour
           });
 
-          await enqueueVerificationEmail(email, token, "ADMIN_FLOW");
+          await enqueueVerificationEmail(user._id, email, token, "ADMIN_FLOW", "admin");
         }
 
         //Audit log for Google Admin registration
@@ -140,7 +140,7 @@ passport.use(
             verificationTokenExpiry: Date.now() + 24 * 60 * 60 * 1000, // 24h expiry
           });
 
-          await sendVerificationEmail(email, token, invitationCode);
+          await enqueueVerificationEmail(user._id, email, token, invitationCode, "student");
 
           await recordAudit({
             userId: user._id,
