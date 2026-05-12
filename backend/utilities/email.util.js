@@ -1,50 +1,63 @@
-const nodemailer = require("nodemailer");
+const https = require("https");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: Number(process.env.SMTP_PORT) === 465, // true for 465, false for other ports (like 587)
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  tls: {
-    // do not fail on invalid certs - common for some shared hosting SMTP servers
-    rejectUnauthorized: false,
-  },
-  connectionTimeout: 10000, // 10 seconds
-  greetingTimeout: 10000,
-  socketTimeout: 20000,
-  debug: true,
-  logger: true,
-});
+/**
+ * Helper to send email via Brevo REST API v3
+ */
+const sendEmailViaBrevo = async (options) => {
+  return new Promise((resolve, reject) => {
+    const data = JSON.stringify({
+      sender: { 
+        email: process.env.BREVO_SENDER_EMAIL, 
+        name: process.env.BREVO_SENDER_NAME || "Fox Academy" 
+      },
+      to: [{ email: options.to }],
+      subject: options.subject,
+      htmlContent: options.html,
+    });
 
-console.log(`SMTP Config: Host=${process.env.SMTP_HOST}, Port=${process.env.SMTP_PORT}, Secure=${Number(process.env.SMTP_PORT) === 465}`);
+    const reqOptions = {
+      hostname: "api.brevo.com",
+      path: "/v3/smtp/email",
+      method: "POST",
+      headers: {
+        "accept": "application/json",
+        "api-key": process.env.BREVO_API_KEY,
+        "content-type": "application/json",
+        "content-length": Buffer.byteLength(data),
+      },
+    };
 
+    const req = https.request(reqOptions, (res) => {
+      let responseBody = "";
+      res.on("data", (chunk) => {
+        responseBody += chunk;
+      });
+      res.on("end", () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(JSON.parse(responseBody));
+        } else {
+          reject(new Error(`Brevo API Error: ${res.statusCode} - ${responseBody}`));
+        }
+      });
+    });
 
-// Debug only in development
-if (process.env.NODE_ENV === "development") {
-  transporter.verify((error) => {
-    if (error) {
-      console.log("SMTP ERROR:", error);
-    } else {
-      console.log("SMTP READY");
-    }
+    req.on("error", (error) => {
+      reject(error);
+    });
+
+    req.write(data);
+    req.end();
   });
-}
- 
-// -------------------- VERIFICATION EMAIL --------------------
+};
 
+// -------------------- VERIFICATION EMAIL --------------------
 
 const sendVerificationEmail = async (email, token, code, role) => {
   try {
-    if (!token) {
-      throw new Error("Token is required");
-    }
+    if (!token) throw new Error("Token is required");
     const cleanToken = token.replace(/\s/g, "");
-
     const url = `${process.env.CLIENT_URL}/verify-email?token=${encodeURIComponent(cleanToken)}&code=${encodeURIComponent(code)}`;
 
     const expiryHours =
@@ -54,57 +67,41 @@ const sendVerificationEmail = async (email, token, code, role) => {
           ? process.env.INVITE_EXPIRY_HOURS_INSTRUCTOR || 72
           : process.env.INVITE_EXPIRY_HOURS_DEFAULT || 24;
 
-    console.log(`Attempting to send verification email to: ${email}`);
-    const info = await transporter.sendMail({
-      from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
+    console.log(`Attempting to send verification email to: ${email} via Brevo API`);
+
+    await sendEmailViaBrevo({
       to: email,
       subject: "Verify Your Invitation",
-      // "X-Priority": "1",
-
       html: `
-<!DOCTYPE html>
-<html>
-  <body style="font-family: Arial, sans-serif; line-height: 1.6;">
-
-    <h2>Welcome to Fox Academy 🎉</h2>
-
-    <p>Your invitation code is:</p>
-    <p><strong>${code}</strong></p>
-
-    <p>Click the link below to verify your invitation:</p>
-
-    <p>
-     <a href="${url}" target="_blank">Verify Invitation</a>
-    </p>
-
-    <p>Or copy and paste this link into your browser:</p>
-    <p style="word-break: break-all;">${url}</p>
-
-    <p>This link expires in ${expiryHours} hours.</p>
-
-  </body>
-</html>
-`,
+        <!DOCTYPE html>
+        <html>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+            <h2>Welcome to Fox Academy 🎉</h2>
+            <p>Your invitation code is:</p>
+            <p><strong>${code}</strong></p>
+            <p>Click the link below to verify your invitation:</p>
+            <p><a href="${url}" target="_blank">Verify Invitation</a></p>
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="word-break: break-all;">${url}</p>
+            <p>This link expires in ${expiryHours} hours.</p>
+          </body>
+        </html>
+      `,
     });
 
-    console.log("Email sent successfully:", info.response);
+    console.log("Verification email sent successfully via Brevo");
   } catch (error) {
-    console.error("Email sending failed. Error Details:", error.message);
-    if (error.code === 'ETIMEDOUT') {
-      console.error("DEBUG TIP: This is a connection timeout. Check if SMTP_PORT is correct and not blocked.");
-    }
+    console.error("Email sending failed. Details:", error.message);
     throw new Error("Email could not be sent");
   }
 };
 
 const sendWelcomeEmail = async (email) => {
   try {
-    console.log(`Attempting to send welcome email to: ${email}`);
-    const info = await transporter.sendMail({
-      from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
+    console.log(`Attempting to send welcome email to: ${email} via Brevo API`);
+    await sendEmailViaBrevo({
       to: email,
       subject: "Welcome to Fox Academy 🎉",
-      // "X-Priority": "1",
       html: `
         <h2>Welcome aboard!</h2>
         <p>Your invitation has been successfully verified.</p>
@@ -112,19 +109,18 @@ const sendWelcomeEmail = async (email) => {
         <p>Best regards,<br/>The Fox Academy Team</p>
       `,
     });
-
-    console.log("Welcome email sent successfully:", info.response);
+    console.log("Welcome email sent successfully via Brevo");
   } catch (error) {
-    console.error("Welcome email sending failed. Error Details:", error.message);
+    console.error("Welcome email sending failed. Details:", error.message);
     throw new Error("Welcome email could not be sent");
   }
 };
+
 // -------------------- WELCOME EMAILS --------------------
 const sendWelcomeEmailStudent = async (email, firstName) => {
   try {
-    console.log(`Attempting to send student welcome email to: ${email}`);
-    const info = await transporter.sendMail({
-      from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
+    console.log(`Attempting to send student welcome email to: ${email} via Brevo API`);
+    await sendEmailViaBrevo({
       to: email,
       subject: "Welcome to Fox Academy 🎉",
       html: `
@@ -134,18 +130,17 @@ const sendWelcomeEmailStudent = async (email, firstName) => {
         <p>Best regards,<br/>Fox Academy Team</p>
       `,
     });
-    console.log("Student welcome email sent successfully:", info.response);
+    console.log("Student welcome email sent successfully via Brevo");
   } catch (error) {
-    console.error("Student welcome email failed. Error Details:", error.message);
+    console.error("Student welcome email failed. Details:", error.message);
     throw new Error("Student welcome email could not be sent");
   }
 };
 
 const sendWelcomeEmailMentor = async (email, firstName, discipline) => {
   try {
-    console.log(`Attempting to send mentor welcome email to: ${email}`);
-    const info = await transporter.sendMail({
-      from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
+    console.log(`Attempting to send mentor welcome email to: ${email} via Brevo API`);
+    await sendEmailViaBrevo({
       to: email,
       subject: "Welcome to Fox Academy – Mentor Onboarding 🎉",
       html: `
@@ -161,9 +156,9 @@ const sendWelcomeEmailMentor = async (email, firstName, discipline) => {
         <p>Warm regards,<br/>Fox Academy Team</p>
       `,
     });
-    console.log("Mentor welcome email sent successfully:", info.response);
+    console.log("Mentor welcome email sent successfully via Brevo");
   } catch (error) {
-    console.error("Mentor welcome email failed. Error Details:", error.message);
+    console.error("Mentor welcome email failed. Details:", error.message);
     throw new Error("Mentor welcome email could not be sent");
   }
 };
@@ -171,9 +166,8 @@ const sendWelcomeEmailMentor = async (email, firstName, discipline) => {
 // -------------------- PROFILE COMPLETION EMAILS --------------------
 const sendProfileCompletionEmailStudent = async (email, firstName, course, studentId) => {
   try {
-    console.log(`Attempting to send student profile completion email to: ${email}`);
-    const info = await transporter.sendMail({
-      from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
+    console.log(`Attempting to send student profile completion email to: ${email} via Brevo API`);
+    await sendEmailViaBrevo({
       to: email,
       subject: "Profile Completed – Welcome to Your Learning Journey",
       html: `
@@ -189,18 +183,17 @@ const sendProfileCompletionEmailStudent = async (email, firstName, course, stude
         <p>Best regards,<br/>Fox Academy Team</p>
       `,
     });
-    console.log("Student profile completion email sent successfully:", info.response);
+    console.log("Student profile completion email sent successfully via Brevo");
   } catch (error) {
-    console.error("Student profile completion email failed. Error Details:", error.message);
+    console.error("Student profile completion email failed. Details:", error.message);
     throw new Error("Student profile completion email could not be sent");
   }
 };
 
 const sendProfileCompletionEmailMentor = async (email, firstName, discipline) => {
   try {
-    console.log(`Attempting to send mentor profile completion email to: ${email}`);
-    const info = await transporter.sendMail({
-      from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
+    console.log(`Attempting to send mentor profile completion email to: ${email} via Brevo API`);
+    await sendEmailViaBrevo({
       to: email,
       subject: "Mentor Profile Completed – Ready to Inspire",
       html: `
@@ -217,21 +210,19 @@ const sendProfileCompletionEmailMentor = async (email, firstName, discipline) =>
         <p>Warm regards,<br/>Fox Academy Team</p>
       `,
     });
-    console.log("Mentor profile completion email sent successfully:", info.response);
+    console.log("Mentor profile completion email sent successfully via Brevo");
   } catch (error) {
-    console.error("Mentor profile completion email failed. Error Details:", error.message);
+    console.error("Mentor profile completion email failed. Details:", error.message);
     throw new Error("Mentor profile completion email could not be sent");
   }
 };
-
 
 // -------------------- ADMIN EMAIL --------------------
 
 const sendWelcomeEmailAdmin = async (email, firstName) => {
   try {
-    console.log(`Attempting to send admin welcome email to: ${email}`);
-    const info = await transporter.sendMail({
-      from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
+    console.log(`Attempting to send admin welcome email to: ${email} via Brevo API`);
+    await sendEmailViaBrevo({
       to: email,
       subject: "Welcome to Fox Academy – Admin Access 🎉",
       html: `
@@ -241,13 +232,12 @@ const sendWelcomeEmailAdmin = async (email, firstName) => {
         <p>Best regards,<br/>Fox Academy Team</p>
       `,
     });
-    console.log("Admin welcome email sent successfully:", info.response);
+    console.log("Admin welcome email sent successfully via Brevo");
   } catch (error) {
-    console.error("Admin welcome email failed. Error Details:", error.message);
+    console.error("Admin welcome email failed. Details:", error.message);
     throw new Error("Admin welcome email could not be sent");
   }
 };
-
 
 // -------------------- EXPORTS --------------------
 module.exports = { 
@@ -259,4 +249,3 @@ module.exports = {
   sendProfileCompletionEmailMentor,
   sendWelcomeEmailAdmin
 };
-
