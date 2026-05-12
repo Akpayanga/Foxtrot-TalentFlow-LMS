@@ -5,14 +5,24 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),
-  secure: true,
+  secure: Number(process.env.SMTP_PORT) === 465, // true for 465, false for other ports (like 587)
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+  tls: {
+    // do not fail on invalid certs - common for some shared hosting SMTP servers
+    rejectUnauthorized: false,
+  },
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 10000,
+  socketTimeout: 20000,
   debug: true,
   logger: true,
 });
+
+console.log(`SMTP Config: Host=${process.env.SMTP_HOST}, Port=${process.env.SMTP_PORT}, Secure=${Number(process.env.SMTP_PORT) === 465}`);
+
 
 // Debug only in development
 if (process.env.NODE_ENV === "development") {
@@ -44,6 +54,7 @@ const sendVerificationEmail = async (email, token, code, role) => {
           ? process.env.INVITE_EXPIRY_HOURS_INSTRUCTOR || 72
           : process.env.INVITE_EXPIRY_HOURS_DEFAULT || 24;
 
+    console.log(`Attempting to send verification email to: ${email}`);
     const info = await transporter.sendMail({
       from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
       to: email,
@@ -76,15 +87,19 @@ const sendVerificationEmail = async (email, token, code, role) => {
 `,
     });
 
-    console.log("Email sent:", info.response);
+    console.log("Email sent successfully:", info.response);
   } catch (error) {
-    console.error("Email sending failed:", error);
+    console.error("Email sending failed. Error Details:", error.message);
+    if (error.code === 'ETIMEDOUT') {
+      console.error("DEBUG TIP: This is a connection timeout. Check if SMTP_PORT is correct and not blocked.");
+    }
     throw new Error("Email could not be sent");
   }
 };
 
 const sendWelcomeEmail = async (email) => {
   try {
+    console.log(`Attempting to send welcome email to: ${email}`);
     const info = await transporter.sendMail({
       from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
       to: email,
@@ -98,15 +113,16 @@ const sendWelcomeEmail = async (email) => {
       `,
     });
 
-    console.log("Welcome email sent:", info.response);
+    console.log("Welcome email sent successfully:", info.response);
   } catch (error) {
-    console.error("Welcome email sending failed:", error);
+    console.error("Welcome email sending failed. Error Details:", error.message);
     throw new Error("Welcome email could not be sent");
   }
 };
 // -------------------- WELCOME EMAILS --------------------
 const sendWelcomeEmailStudent = async (email, firstName) => {
   try {
+    console.log(`Attempting to send student welcome email to: ${email}`);
     const info = await transporter.sendMail({
       from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
       to: email,
@@ -118,15 +134,16 @@ const sendWelcomeEmailStudent = async (email, firstName) => {
         <p>Best regards,<br/>Fox Academy Team</p>
       `,
     });
-    console.log("Student welcome email sent:", info.response);
+    console.log("Student welcome email sent successfully:", info.response);
   } catch (error) {
-    console.error("Student welcome email failed:", error);
+    console.error("Student welcome email failed. Error Details:", error.message);
     throw new Error("Student welcome email could not be sent");
   }
 };
 
 const sendWelcomeEmailMentor = async (email, firstName, discipline) => {
   try {
+    console.log(`Attempting to send mentor welcome email to: ${email}`);
     const info = await transporter.sendMail({
       from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
       to: email,
@@ -144,9 +161,9 @@ const sendWelcomeEmailMentor = async (email, firstName, discipline) => {
         <p>Warm regards,<br/>Fox Academy Team</p>
       `,
     });
-    console.log("Mentor welcome email sent:", info.response);
+    console.log("Mentor welcome email sent successfully:", info.response);
   } catch (error) {
-    console.error("Mentor welcome email failed:", error);
+    console.error("Mentor welcome email failed. Error Details:", error.message);
     throw new Error("Mentor welcome email could not be sent");
   }
 };
@@ -154,6 +171,7 @@ const sendWelcomeEmailMentor = async (email, firstName, discipline) => {
 // -------------------- PROFILE COMPLETION EMAILS --------------------
 const sendProfileCompletionEmailStudent = async (email, firstName, course, studentId) => {
   try {
+    console.log(`Attempting to send student profile completion email to: ${email}`);
     const info = await transporter.sendMail({
       from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
       to: email,
@@ -171,15 +189,16 @@ const sendProfileCompletionEmailStudent = async (email, firstName, course, stude
         <p>Best regards,<br/>Fox Academy Team</p>
       `,
     });
-    console.log("Student profile completion email sent:", info.response);
+    console.log("Student profile completion email sent successfully:", info.response);
   } catch (error) {
-    console.error("Student profile completion email failed:", error);
+    console.error("Student profile completion email failed. Error Details:", error.message);
     throw new Error("Student profile completion email could not be sent");
   }
 };
 
 const sendProfileCompletionEmailMentor = async (email, firstName, discipline) => {
   try {
+    console.log(`Attempting to send mentor profile completion email to: ${email}`);
     const info = await transporter.sendMail({
       from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
       to: email,
@@ -198,9 +217,9 @@ const sendProfileCompletionEmailMentor = async (email, firstName, discipline) =>
         <p>Warm regards,<br/>Fox Academy Team</p>
       `,
     });
-    console.log("Mentor profile completion email sent:", info.response);
+    console.log("Mentor profile completion email sent successfully:", info.response);
   } catch (error) {
-    console.error("Mentor profile completion email failed:", error);
+    console.error("Mentor profile completion email failed. Error Details:", error.message);
     throw new Error("Mentor profile completion email could not be sent");
   }
 };
@@ -210,6 +229,7 @@ const sendProfileCompletionEmailMentor = async (email, firstName, discipline) =>
 
 const sendWelcomeEmailAdmin = async (email, firstName) => {
   try {
+    console.log(`Attempting to send admin welcome email to: ${email}`);
     const info = await transporter.sendMail({
       from: `"FoxtrotTalent" <${process.env.SMTP_USER}>`,
       to: email,
@@ -221,9 +241,9 @@ const sendWelcomeEmailAdmin = async (email, firstName) => {
         <p>Best regards,<br/>Fox Academy Team</p>
       `,
     });
-    console.log("Admin welcome email sent:", info.response);
+    console.log("Admin welcome email sent successfully:", info.response);
   } catch (error) {
-    console.error("Admin welcome email failed:", error);
+    console.error("Admin welcome email failed. Error Details:", error.message);
     throw new Error("Admin welcome email could not be sent");
   }
 };
