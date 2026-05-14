@@ -109,6 +109,13 @@ exports.verifyInvitation = async (req, res, next) => {
     const token = req.body.token || req.query.token;
     const code = req.body.code || req.query.code;
 
+    console.log("DEBUG: Verify Invitation Attempt");
+    console.log("DEBUG: Received Token:", token ? "Exists" : "MISSING");
+    console.log("DEBUG: Received Code:", code ? "Exists" : "MISSING");
+    console.log("DEBUG: Full Body:", req.body);
+    console.log("DEBUG: Full Query:", req.query);
+
+
     if (!token || !code) {
       throw new ApiError(400, "Verification token and code are required");
     }
@@ -410,6 +417,13 @@ exports.mentorVerifyInvitation = async (req, res, next) => {
   try {
     const token = req.body.token || req.query.token;
     const code = req.body.code || req.query.code;
+
+    console.log("DEBUG MENTOR: Verify Invitation Attempt");
+    console.log("DEBUG MENTOR: Received Token:", token ? "Exists" : "MISSING");
+    console.log("DEBUG MENTOR: Received Code:", code ? "Exists" : "MISSING");
+    console.log("DEBUG MENTOR: Full Body:", req.body);
+    console.log("DEBUG MENTOR: Full Query:", req.query);
+
 
     if (!token || !code) {
       throw new ApiError(400, "Verification token and code are required");
