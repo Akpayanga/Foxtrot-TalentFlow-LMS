@@ -121,13 +121,71 @@ exports.verifyInvitation = async (req, res, next) => {
     }
 
     const decoded = verifyToken(token, process.env.JWT_REFRESH_SECRET);
-    const user = await User.findOne({
+    let user = await User.findOne({
       email: decoded.email,
-      preRegistered: true,
     });
+
+    console.log("DEBUG: Found user by email:", user ? "YES" : "NO");
+
+    if (!user) {
+      console.log("DEBUG: Checking legacy Application collection fallback...");
+      const Application = require("../models/application.model");
+      const application = await Application.findOne({ email: decoded.email });
+
+      if (application) {
+        console.log("DEBUG: Found legacy application, migrating to User model on the fly...");
+
+        const disciplineMap = {
+          "backend": "backend",
+          "frontend": "frontend",
+          "product design": "uiux",
+          "uiux": "uiux",
+          "graphicdesign": "graphicdesign",
+          "graphic design": "graphicdesign",
+          "socialmedia": "socialmedia",
+          "social media": "socialmedia",
+          "cybersecurity": "cybersecurity"
+        };
+        const mappedDiscipline = disciplineMap[application.primaryDiscipline.toLowerCase()] || "backend";
+        const mappedExpertise = application.expertiseLevel.toLowerCase();
+
+        const firstName = application.fullName.split(" ")[0];
+        const lastName = application.fullName.split(" ").slice(1).join(" ") || "";
+
+        user = await User.create({
+          firstName,
+          lastName,
+          email: application.email,
+          phoneNumber: application.phoneNumber,
+          role: "student",
+          discipline: mappedDiscipline,
+          expertiseLevel: mappedExpertise,
+          statement: application.personalStatement,
+          portfolioUrl: application.portfolioUrl,
+          githubOrLinkedIn: application.githubLinkedin,
+          preRegistered: true,
+          invitationCode: code,
+          verificationToken: token,
+          verificationTokenExpiry: Date.now() + 24 * 60 * 60 * 1000,
+        });
+
+        console.log("DEBUG: Successfully created User record from legacy Application on the fly");
+      }
+    }
+
+    if (user) {
+      console.log("DEBUG: User preRegistered status:", user.preRegistered);
+      console.log("DEBUG: User verificationToken matches:", user.verificationToken === token);
+      console.log("DEBUG: User verificationToken in DB:", user.verificationToken);
+      console.log("DEBUG: Provided token:", token);
+      console.log("DEBUG: Token Expiry:", user.verificationTokenExpiry);
+      console.log("DEBUG: Current Time:", Date.now());
+      console.log("DEBUG: Expiry check (Expiry > Current):", user.verificationTokenExpiry > Date.now());
+    }
 
     if (
       !user ||
+      !user.preRegistered ||
       user.verificationToken !== token ||
       user.verificationTokenExpiry < Date.now()
     ) {
@@ -434,11 +492,22 @@ exports.mentorVerifyInvitation = async (req, res, next) => {
     const user = await User.findOne({
       email: decoded.email,
       role: "instructor",
-      preRegistered: true,
     });
+
+    console.log("DEBUG MENTOR: Found user by email:", user ? "YES" : "NO");
+    if (user) {
+      console.log("DEBUG MENTOR: User preRegistered status:", user.preRegistered);
+      console.log("DEBUG MENTOR: User verificationToken matches:", user.verificationToken === token);
+      console.log("DEBUG MENTOR: User verificationToken in DB:", user.verificationToken);
+      console.log("DEBUG MENTOR: Provided token:", token);
+      console.log("DEBUG MENTOR: Token Expiry:", user.verificationTokenExpiry);
+      console.log("DEBUG MENTOR: Current Time:", Date.now());
+      console.log("DEBUG MENTOR: Expiry check (Expiry > Current):", user.verificationTokenExpiry > Date.now());
+    }
 
     if (
       !user ||
+      !user.preRegistered ||
       user.verificationToken !== token ||
       user.verificationTokenExpiry < Date.now()
     ) {

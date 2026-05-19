@@ -23,11 +23,12 @@ const handlers = {
     }
     await sendVerificationEmail(data.email, data.token, data.code, data.role);
     await recordAudit({
+      userId: data.userId || null,
       action: "EMAIL_SENT:VERIFICATION",
       details: `Verification email sent to ${data.email}`,
-      resourceId: data.email,
-      resourceType: "Email",
-      metadata: { role: data.role, sentAt: new Date() },
+      resourceId: data.userId || null,
+      resourceType: "User",
+      metadata: { role: data.role, email: data.email, sentAt: new Date() },
     });
   },
 
@@ -38,11 +39,12 @@ const handlers = {
     }
     await sendWelcomeEmailStudent(data.email, data.firstName);
     await recordAudit({
+      userId: data.userId || null,
       action: "EMAIL_SENT:WELCOME_STUDENT",
       details: `Student welcome email sent to ${data.email}`,
-      resourceId: data.email,
-      resourceType: "Email",
-      metadata: { sentAt: new Date() },
+      resourceId: data.userId || null,
+      resourceType: "User",
+      metadata: { email: data.email, sentAt: new Date() },
     });
   },
 
@@ -52,11 +54,12 @@ const handlers = {
     }
     await sendWelcomeEmailMentor(data.email, data.firstName, data.discipline);
     await recordAudit({
+      userId: data.userId || null,
       action: "EMAIL_SENT:WELCOME_MENTOR",
       details: `Mentor welcome email sent to ${data.email}`,
-      resourceId: data.email,
-      resourceType: "Email",
-      metadata: { discipline: data.discipline, sentAt: new Date() },
+      resourceId: data.userId || null,
+      resourceType: "User",
+      metadata: { discipline: data.discipline, email: data.email, sentAt: new Date() },
     });
   },
 
@@ -72,11 +75,13 @@ const handlers = {
       data.studentId
     );
     await recordAudit({
+      userId: data.userId || null,
       action: "EMAIL_SENT:PROFILE_COMPLETION_STUDENT",
       details: `Student profile completion email sent to ${data.email}`,
-      resourceId: data.email,
-      resourceType: "Email",
+      resourceId: data.userId || null,
+      resourceType: "User",
       metadata: {
+        email: data.email,
         course: data.course,
         studentId: data.studentId,
         sentAt: new Date(),
@@ -94,11 +99,12 @@ const handlers = {
       data.discipline
     );
     await recordAudit({
+      userId: data.userId || null,
       action: "EMAIL_SENT:PROFILE_COMPLETION_MENTOR",
       details: `Mentor profile completion email sent to ${data.email}`,
-      resourceId: data.email,
-      resourceType: "Email",
-      metadata: { discipline: data.discipline, sentAt: new Date() },
+      resourceId: data.userId || null,
+      resourceType: "User",
+      metadata: { discipline: data.discipline, email: data.email, sentAt: new Date() },
     });
   },
 
@@ -111,11 +117,9 @@ const handlers = {
       userId: data.userId || null,
       action: "EMAIL_SENT:WELCOME_ADMIN",
       details: `Admin welcome email sent to ${data.email}`,
-      req: {},
-      status: "success",
-      resourceId: data.email,
-      resourceType: "Email",
-      metadata: { sentAt: new Date() },
+      resourceId: data.userId || null,
+      resourceType: "User",
+      metadata: { email: data.email, sentAt: new Date() },
     });
   },
 };
