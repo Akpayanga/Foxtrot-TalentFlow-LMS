@@ -96,11 +96,11 @@ export default function SignupCreate() {
           <div className="absolute inset-0 bg-[#1E2939]/55" />
         </div>
 
-        <div className="flex items-center justify-center bg-[#F4F4F4] px-6 py-10 md:px-[84px]">
-          <div className="w-full max-w-[448px] space-y-6">
+        <div className="flex items-center justify-center bg-[#F4F4F4] px-6 py-10 md:px-21">
+          <div className="w-full max-w-md space-y-6">
             <div className="flex items-center gap-2">
               <span className="h-8 w-8 rounded bg-[#F38821]" />
-              <span className="text-[20px] font-bold leading-[1.5] text-[#F38821]">
+              <span className="text-[20px] font-bold leading-normal text-[#F38821]">
                 Fox Academy
               </span>
             </div>
@@ -119,7 +119,7 @@ export default function SignupCreate() {
               <h1 className="text-[28px] font-bold leading-[1.4] text-[#101828]">
                 Create Your Account
               </h1>
-              <p className="text-[16px] leading-[1.5] text-[#4A5565]">
+              <p className="text-[16px] leading-normal text-[#4A5565]">
                 You&apos;re joining as a{" "}
                 <span className="inline-flex items-center rounded-lg bg-[#F38821] px-3 py-0.5 text-[11px] font-bold text-white">
                   UI/UX Design Intern
@@ -257,7 +257,7 @@ export default function SignupCreate() {
               </label>
 
               {submitError ? (
-                <p className="rounded-[8px] border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#B91C1C]">
+                <p className="rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#B91C1C]">
                   {submitError}
                 </p>
               ) : null}

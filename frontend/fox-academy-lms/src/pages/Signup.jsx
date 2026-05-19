@@ -232,13 +232,13 @@ export default function Signup() {
               </div>
 
               {submitError ? (
-                <p className="rounded-[8px] border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#B91C1C]">
+                <p className="rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#B91C1C]">
                   {submitError}
                 </p>
               ) : null}
 
               {submitSuccess ? (
-                <p className="rounded-[8px] border border-[#86EFAC] bg-[#F0FDF4] px-4 py-3 text-[13px] text-[#166534]">
+                <p className="rounded-lg border border-[#86EFAC] bg-[#F0FDF4] px-4 py-3 text-[13px] text-[#166534]">
                   {submitSuccess}
                 </p>
               ) : null}
