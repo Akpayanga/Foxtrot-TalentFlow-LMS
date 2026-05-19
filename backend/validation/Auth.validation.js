@@ -22,9 +22,9 @@ exports.preRegisterSchema = Joi.object({
     .valid("entry", "intermediate", "senior", "lead")
     .required(),
 
-  statement: Joi.string().trim().required(),
-  portfolioUrl: Joi.string().uri().required(),
-  githubOrLinkedIn: Joi.string().uri().required(),
+  statement: Joi.string().trim().optional(),
+  portfolioUrl: Joi.string().uri().allow("").optional(),
+  githubOrLinkedIn: Joi.string().uri().allow("").optional(),
 });
 
 // Admin register schema (normal flow)
