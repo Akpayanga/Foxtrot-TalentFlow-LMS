@@ -27,9 +27,30 @@ export default function Signup() {
     discipline: "UI/UX Design",
   };
 
+  const normalizeApplicant = (source) => {
+    if (!source) {
+      return fallbackApplicant;
+    }
+
+    const fullName = source.fullName || [source.firstName, source.lastName].filter(Boolean).join(" ");
+    const phone = source.phone || source.phoneNumber || fallbackApplicant.phone;
+    const discipline =
+      source.discipline || source.primaryDiscipline || fallbackApplicant.discipline;
+
+    return {
+      ...fallbackApplicant,
+      ...source,
+      fullName: fullName || fallbackApplicant.fullName,
+      email: source.email || fallbackApplicant.email,
+      phone,
+      phoneNumber: source.phoneNumber || phone,
+      discipline,
+      primaryDiscipline: source.primaryDiscipline || discipline,
+    };
+  };
+
   const applicant = {
-    ...fallbackApplicant,
-    ...(location.state?.applicant || {}),
+    ...normalizeApplicant(location.state?.applicant),
   };
 
   const handleSubmit = async (event) => {

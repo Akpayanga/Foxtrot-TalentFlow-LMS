@@ -44,20 +44,34 @@ export default function SignupCreate() {
     setIsSubmitting(true);
 
     try {
-      await preRegisterUser({
+      const response = await preRegisterUser({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
       });
 
+      const backendApplicant = response?.applicant || response?.data || {};
+      const fullName = [
+        backendApplicant.firstName || formData.firstName,
+        backendApplicant.lastName || formData.lastName,
+      ]
+        .filter(Boolean)
+        .join(" ");
+
       // Pass applicant details (without password) to the verification step
       navigate("/verify-email", {
         state: {
           email: formData.email,
           applicant: {
-            fullName: `${formData.firstName} ${formData.lastName}`,
-            email: formData.email,
+            fullName: backendApplicant.fullName || fullName,
+            email: backendApplicant.email || formData.email,
+            phone: backendApplicant.phone || backendApplicant.phoneNumber || "",
+            phoneNumber: backendApplicant.phoneNumber || backendApplicant.phone || "",
+            discipline:
+              backendApplicant.discipline || backendApplicant.primaryDiscipline || "",
+            primaryDiscipline:
+              backendApplicant.primaryDiscipline || backendApplicant.discipline || "",
           },
         },
       });
