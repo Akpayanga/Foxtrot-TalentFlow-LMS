@@ -54,6 +54,7 @@ export default function SignupCreate() {
       navigate("/verify-email", {
         state: {
           email: formData.email,
+          password: formData.password,
         },
       });
     } catch (error) {
