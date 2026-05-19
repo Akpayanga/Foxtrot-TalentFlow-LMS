@@ -1,27 +1,34 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Mail, Check } from "lucide-react";
-import { completeRegistration } from "../services/authService";
+import { verifyInvitation } from "../services/authService";
 
 export default function EmailVerification() {
   const location = useLocation();
   const navigate = useNavigate();
-  const email = location.state?.email || "";
-  const password = location.state?.password || "";
+  const email = location.state?.email || "amara@email.com";
+  const applicant = location.state?.applicant || { fullName: "Amara Okoro", email };
+  const searchParams = new URLSearchParams(location.search);
+  const verificationTokenFromUrl =
+    searchParams.get("token") || searchParams.get("invitationToken") || "";
+  const invitationCodeFromUrl =
+    searchParams.get("code") || searchParams.get("invitation") || "";
 
+  const [secondsLeft, setSecondsLeft] = useState(60);
+  const [invitationCode, setInvitationCode] = useState(invitationCodeFromUrl);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState("");
   const [verifySuccess, setVerifySuccess] = useState("");
 
   const handleVerify = async () => {
-    if (!email.trim()) {
-      setVerifyError("Email is missing from the registration flow.");
+    if (!verificationTokenFromUrl.trim()) {
+      setVerifyError("Verification token is missing from the link.");
       setVerifySuccess("");
       return;
     }
 
-    if (!password.trim()) {
-      setVerifyError("Password is missing from the registration flow.");
+    if (!invitationCode.trim()) {
+      setVerifyError("Verification code is required.");
       setVerifySuccess("");
       return;
     }
@@ -31,15 +38,20 @@ export default function EmailVerification() {
     setIsVerifying(true);
 
     try {
-      const response = await completeRegistration({
-        email: email.trim(),
-        password,
+      const response = await verifyInvitation({
+        token: verificationTokenFromUrl.trim(),
+        code: invitationCode.trim(),
       });
-      setVerifySuccess(response?.message || "Registration completed successfully.");
-      navigate("/dashboard", { replace: true, state: { fromRegistration: true } });
+      setVerifySuccess(response?.message || "Email verified successfully.");
+
+      // Redirect to signup so the user can create their password (prefilled fields)
+      navigate("/signup", {
+        state: { applicant },
+        replace: true,
+      });
     } catch (error) {
       setVerifyError(
-        error?.response?.data?.message || "Registration failed. Please try again."
+        error?.response?.data?.message || "Verification failed. Please check the code and try again."
       );
     } finally {
       setIsVerifying(false);
@@ -47,13 +59,13 @@ export default function EmailVerification() {
   };
 
   useEffect(() => {
-    if (email && password) {
-      handleVerify();
+    if (secondsLeft > 0) {
+      const timerId = setTimeout(() => setSecondsLeft(secondsLeft - 1), 1000);
+      return () => clearTimeout(timerId);
     }
+  }, [secondsLeft]);
 
-    // Auto-complete registration when the signup flow provides credentials.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const canResend = secondsLeft === 0;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] px-4">
@@ -73,25 +85,36 @@ export default function EmailVerification() {
 
         {/* Main Text */}
         <p className="text-[15px] leading-relaxed text-[#4B5563] mb-8 max-w-85 mx-auto">
-          {email ? (
-            <>
-              We&apos;re finishing setup for <br className="hidden md:block" />
-              <span className="font-semibold text-[#111827]">{email}</span>.
-            </>
-          ) : (
-            <>
-              We&apos;re missing your registration details. Please return to
-              signup and try again.
-            </>
-          )}
+          Welcome back,
+          <br className="hidden md:block" />
+          <span className="font-semibold text-[#111827]">{applicant.fullName.split(" ")[0]}</span>
+          {" "}— enter the code from your email to continue.
         </p>
 
         {/* Expiry Text */}
         <p className="text-[13px] text-[#6B7280] mb-6">
-          Once verification succeeds, you&apos;ll be redirected to your dashboard.
+          The code expires in 24 hours.
         </p>
 
-        <div className="mb-8 space-y-3 text-left">
+        <div className="mb-6 space-y-3 text-left">
+          <label className="block text-[13px] font-medium text-[#111827]">
+            Verification Code
+          </label>
+          <input
+            type="text"
+            value={invitationCode}
+            onChange={(event) => setInvitationCode(event.target.value)}
+            placeholder="Paste verification code"
+            className="w-full rounded-[10px] border border-[#D1D5DC] bg-white px-4 py-3 text-[14px] text-[#111827] placeholder:text-[#99A1AF] focus:border-[#F38821] focus:outline-none"
+          />
+          <button
+            onClick={handleVerify}
+            disabled={isVerifying}
+            className="w-full rounded-[10px] bg-[#F38821] px-4 py-3 text-[15px] font-semibold text-white transition hover:bg-[#e37b1d] disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {isVerifying ? "Verifying..." : "Verify Email"}
+          </button>
+
           {verifyError ? (
             <p className="rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 text-[13px] text-[#B91C1C]">
               {verifyError}
@@ -103,14 +126,31 @@ export default function EmailVerification() {
               {verifySuccess}
             </p>
           ) : null}
+        </div>
 
-          <button
-            onClick={handleVerify}
-            disabled={isVerifying || !email || !password}
-            className="w-full rounded-[10px] bg-[#F38821] px-4 py-3 text-[15px] font-semibold text-white transition hover:bg-[#e37b1d] disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {isVerifying ? "Completing..." : "Continue to Dashboard"}
-          </button>
+        {/* Divider line */}
+        <hr className="border-gray-100 mb-6" />
+
+        {/* Resend Button */}
+        <button 
+          onClick={() => { if (canResend) setSecondsLeft(60); }}
+          disabled={!canResend}
+          className={`w-full rounded-[10px] border px-4 py-3.5 text-[15px] font-semibold transition ${
+            canResend 
+              ? "border-[#F38821] bg-transparent text-[#F38821] hover:bg-[#F38821]/5" 
+              : "border-[#F38821]/30 bg-transparent text-[#F38821]/40 cursor-not-allowed"
+          }`}
+        >
+          Resend Verification Email
+        </button>
+
+        {/* Counter Text */}
+        <div className="h-5 mt-3 mb-8">
+          {!canResend && (
+            <p className="text-[13px] text-[#6B7280]">
+              You can resend in <strong className="text-[#111827]">{Math.floor(secondsLeft/60).toString().padStart(2,'0')}:{(secondsLeft%60).toString().padStart(2,'0')}</strong>
+            </p>
+          )}
         </div>
 
         {/* Footer links */}

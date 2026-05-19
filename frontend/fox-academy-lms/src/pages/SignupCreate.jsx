@@ -51,10 +51,14 @@ export default function SignupCreate() {
         password: formData.password,
       });
 
+      // Pass applicant details (without password) to the verification step
       navigate("/verify-email", {
         state: {
           email: formData.email,
-          password: formData.password,
+          applicant: {
+            fullName: `${formData.firstName} ${formData.lastName}`,
+            email: formData.email,
+          },
         },
       });
     } catch (error) {
