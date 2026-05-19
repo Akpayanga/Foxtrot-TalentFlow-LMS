@@ -1,4 +1,5 @@
 const Application = require("../models/application.model");
+const User = require("../models/user.model");
 const { recordAudit } = require("../utilities/audit.util");
 const { success } = require("../utilities/response");
 const ApiError = require("../utilities/apiError.util");
@@ -35,6 +36,16 @@ exports.submitApplication = async (req, res, next) => {
       );
     }
 
+    const existingUser = await User.findOne({ email, provider: "local" });
+    if (existingUser) {
+      return next(
+        new ApiError(
+          400,
+          "A user account with this email already exists.",
+        ),
+      );
+    }
+
     const invitationCode = crypto.randomBytes(6).toString("hex").toUpperCase();
     const token = generateRefreshToken({ email });
 
@@ -49,13 +60,50 @@ exports.submitApplication = async (req, res, next) => {
       githubLinkedin,
     });
 
-    await enqueueVerificationEmail(application._id, email, token, invitationCode, "student");
+    // Map fields to User schema formatting/enums
+    const disciplineMap = {
+      "backend": "backend",
+      "frontend": "frontend",
+      "product design": "uiux",
+      "uiux": "uiux",
+      "graphicdesign": "graphicdesign",
+      "graphic design": "graphicdesign",
+      "socialmedia": "socialmedia",
+      "social media": "socialmedia",
+      "cybersecurity": "cybersecurity"
+    };
+    const mappedDiscipline = disciplineMap[primaryDiscipline.toLowerCase()] || "backend";
+    const mappedExpertise = expertiseLevel.toLowerCase();
+
+    const firstName = fullName.split(" ")[0];
+    const lastName = fullName.split(" ").slice(1).join(" ") || "";
+
+    const expiryHours = Number(process.env.INVITE_EXPIRY_HOURS_STUDENT) || 24;
+
+    const user = await User.create({
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      role: "student",
+      discipline: mappedDiscipline,
+      expertiseLevel: mappedExpertise,
+      statement: personalStatement,
+      portfolioUrl,
+      githubOrLinkedIn: githubLinkedin,
+      preRegistered: true,
+      invitationCode,
+      verificationToken: token,
+      verificationTokenExpiry: Date.now() + expiryHours * 60 * 60 * 1000,
+    });
+
+    await enqueueVerificationEmail(user._id, email, token, invitationCode, "student");
 
     // Audit log
     await recordAudit({
-      userId: null,
+      userId: user._id,
       action: "APPLICATION_SUBMIT",
-      details: `Application submitted for ${email}`,
+      details: `Application submitted and user pre-registered for ${email}`,
       req,
       status: "success",
       resourceId: application._id,
