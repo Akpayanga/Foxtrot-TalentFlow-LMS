@@ -4,6 +4,41 @@ import { Eye, EyeOff } from "lucide-react";
 import auth4 from "../assets/images/auth4.png";
 import { preRegisterUser } from "../services/authService";
 
+const buildApplicantProfile = (payload, fallback = {}) => {
+  const source =
+    payload?.applicant ||
+    payload?.user ||
+    payload?.data?.applicant ||
+    payload?.data?.user ||
+    payload?.data ||
+    payload ||
+    {};
+
+  const firstName = source.firstName || source.firstname || fallback.firstName || "";
+  const lastName = source.lastName || source.lastname || fallback.lastName || "";
+  const fullName =
+    source.fullName || source.name || [firstName, lastName].filter(Boolean).join(" ");
+  const email = source.email || fallback.email || "";
+  const phone = source.phone || source.phoneNumber || fallback.phone || fallback.phoneNumber || "";
+  const discipline =
+    source.discipline ||
+    source.primaryDiscipline ||
+    fallback.discipline ||
+    fallback.primaryDiscipline ||
+    "";
+
+  return {
+    firstName,
+    lastName,
+    fullName,
+    email,
+    phone,
+    phoneNumber: source.phoneNumber || phone,
+    discipline,
+    primaryDiscipline: source.primaryDiscipline || discipline,
+  };
+};
+
 export default function SignupCreate() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -51,28 +86,19 @@ export default function SignupCreate() {
         password: formData.password,
       });
 
-      const backendApplicant = response?.applicant || response?.data || {};
-      const fullName = [
-        backendApplicant.firstName || formData.firstName,
-        backendApplicant.lastName || formData.lastName,
-      ]
-        .filter(Boolean)
-        .join(" ");
+      const applicantProfile = buildApplicantProfile(response, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+      });
+
+      localStorage.setItem("applicantProfile", JSON.stringify(applicantProfile));
 
       // Pass applicant details (without password) to the verification step
       navigate("/verify-email", {
         state: {
-          email: formData.email,
-          applicant: {
-            fullName: backendApplicant.fullName || fullName,
-            email: backendApplicant.email || formData.email,
-            phone: backendApplicant.phone || backendApplicant.phoneNumber || "",
-            phoneNumber: backendApplicant.phoneNumber || backendApplicant.phone || "",
-            discipline:
-              backendApplicant.discipline || backendApplicant.primaryDiscipline || "",
-            primaryDiscipline:
-              backendApplicant.primaryDiscipline || backendApplicant.discipline || "",
-          },
+          email: applicantProfile.email,
+          applicant: applicantProfile,
         },
       });
     } catch (error) {

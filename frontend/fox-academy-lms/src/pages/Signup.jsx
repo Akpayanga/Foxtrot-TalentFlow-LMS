@@ -19,7 +19,16 @@ export default function Signup() {
   const invitationCode =
     searchParams.get("code") || searchParams.get("token") || searchParams.get("invitation") || "";
 
-  // Temporary mock values representing data prefilled from backend application records.
+  const storedApplicant = (() => {
+    try {
+      const value = localStorage.getItem("applicantProfile");
+      return value ? JSON.parse(value) : {};
+    } catch {
+      return {};
+    }
+  })();
+
+  // Prefer real applicant data from the verification flow or stored profile.
   const fallbackApplicant = {
     fullName: "Amara Okoro",
     email: "amara@example.com",
@@ -50,7 +59,10 @@ export default function Signup() {
   };
 
   const applicant = {
-    ...normalizeApplicant(location.state?.applicant),
+    ...normalizeApplicant({
+      ...storedApplicant,
+      ...(location.state?.applicant || {}),
+    }),
   };
 
   const handleSubmit = async (event) => {
@@ -61,6 +73,11 @@ export default function Signup() {
 
     if (password !== confirmPassword) {
       setSubmitError("Passwords do not match.");
+      return;
+    }
+
+    if (!applicant.email || applicant.email === fallbackApplicant.email) {
+      setSubmitError("Registration details are missing. Please restart from your email link.");
       return;
     }
 

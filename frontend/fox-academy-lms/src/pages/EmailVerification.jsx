@@ -3,11 +3,24 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Mail, Check } from "lucide-react";
 import { verifyInvitation } from "../services/authService";
 
+const parseStoredApplicant = () => {
+  try {
+    const value = localStorage.getItem("applicantProfile");
+    return value ? JSON.parse(value) : {};
+  } catch {
+    return {};
+  }
+};
+
 export default function EmailVerification() {
   const location = useLocation();
   const navigate = useNavigate();
-  const email = location.state?.email || "amara@email.com";
-  const applicant = location.state?.applicant || { fullName: "Amara Okoro", email };
+  const storedApplicant = parseStoredApplicant();
+  const applicant = {
+    ...storedApplicant,
+    ...(location.state?.applicant || {}),
+  };
+  const email = applicant.email || location.state?.email || storedApplicant.email || "";
   const searchParams = new URLSearchParams(location.search);
   const verificationTokenFromUrl =
     searchParams.get("token") || searchParams.get("invitationToken") || "";
@@ -43,6 +56,8 @@ export default function EmailVerification() {
         code: invitationCode.trim(),
       });
       setVerifySuccess(response?.message || "Email verified successfully.");
+
+      localStorage.setItem("applicantProfile", JSON.stringify(applicant));
 
       // Redirect to signup so the user can create their password (prefilled fields)
       navigate("/signup", {
@@ -87,8 +102,16 @@ export default function EmailVerification() {
         <p className="text-[15px] leading-relaxed text-[#4B5563] mb-8 max-w-85 mx-auto">
           Welcome back,
           <br className="hidden md:block" />
-          <span className="font-semibold text-[#111827]">{applicant.fullName.split(" ")[0]}</span>
-          {" "}— enter the code from your email to continue.
+          <span className="font-semibold text-[#111827]">
+            {applicant.fullName?.split(" ")?.[0] || "Applicant"}
+          </span>
+          {email ? (
+            <>
+              {" "}— enter the code sent to <span className="font-semibold text-[#111827]">{email}</span> to continue.
+            </>
+          ) : (
+            <> {" "}— enter the code from your email to continue.</>
+          )}
         </p>
 
         {/* Expiry Text */}
