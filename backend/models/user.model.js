@@ -42,23 +42,14 @@ const userSchema = new mongoose.Schema(
     statement: {
       type: String,
       trim: true,
-      required: function () {
-        return this.role === "student" && this.preRegistered;
-      },
     },
     portfolioUrl: {
       type: String,
       trim: true,
-      required: function () {
-        return this.role === "student" && this.preRegistered;
-      },
     },
     githubOrLinkedIn: {
       type: String,
       trim: true,
-      required: function () {
-        return this.role === "student" && this.preRegistered;
-      },
     },
 
     // STUDENT onboarding
